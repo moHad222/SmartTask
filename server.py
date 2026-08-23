@@ -1,5 +1,6 @@
 import json
 import secrets
+import os
 
 from http.server import (
     SimpleHTTPRequestHandler,
@@ -1544,10 +1545,9 @@ class SmartTaskHandler(
 if __name__ == "__main__":
 
     server = HTTPServer(
-        (HOST, PORT),
-        SmartTaskHandler
+    ("0.0.0.0", int(os.environ.get("PORT", PORT))),
+    SmartTaskHandler
     )
-
 
     print(
         "================================="
