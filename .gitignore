@@ -1,0 +1,18 @@
+# Database
+smarttask.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
