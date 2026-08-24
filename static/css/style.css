@@ -5,9 +5,9 @@
 }
 
 :root {
-    --cream-bg:#faf7f0; 
-    --cream-light: #fbf8f1;
-    --cream-card: #fffdf8;
+    --cream-bg: #faf7f0;
+    --cream-light: #fdfaf5;
+    --cream-card: #fffdf9;
 
     --brown-dark: #4a3b31;
     --brown: #725b49;
@@ -23,7 +23,7 @@
     --sand: #d8c7b2;
     --sand-light: #eee5d9;
 
-    --border: #e3d8ca;
+    --border: #e5dbce;
 
     --text: #3f352e;
     --muted: #817369;
@@ -31,8 +31,13 @@
     --danger: #9a5b55;
     --danger-light: #f3e4e1;
 
-    --shadow: 0 8px 28px rgba(75, 59, 45, 0.08);
+    --shadow: 0 8px 28px rgba(75, 59, 45, 0.07);
 }
+
+
+/* =========================
+   GENERAL
+========================= */
 
 body {
     font-family: Tahoma, Arial, sans-serif;
@@ -40,6 +45,43 @@ body {
     background: var(--cream-bg);
     color: var(--text);
     min-height: 100vh;
+
+    cursor: default;
+}
+
+/* متن‌ها و عناصر غیرقابل کلیک */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+strong,
+small,
+label,
+.brand,
+.welcome-content,
+.stat-card,
+.stat-card *,
+.section-header,
+.section-header *,
+.section-title,
+.section-title *,
+.task-description,
+.task-meta,
+.task-meta *,
+.reminder-message,
+.reminder-info,
+.reminder-info *,
+.empty-state,
+.empty-state *,
+.modal-header,
+.modal-header *,
+.form-group label,
+.form-group small {
+    cursor: default;
 }
 
 
@@ -50,6 +92,7 @@ body {
 .topbar {
     width: 100%;
     padding: 18px 6%;
+
     background: rgba(255, 253, 248, 0.97);
     border-bottom: 1px solid var(--border);
 
@@ -81,6 +124,8 @@ body {
     font-weight: bold;
 
     box-shadow: 0 5px 15px rgba(104, 115, 75, 0.2);
+
+    cursor: default;
 }
 
 .brand h1 {
@@ -110,6 +155,8 @@ body {
     background: var(--cream-card);
 
     font-size: 13px;
+
+    cursor: default;
 }
 
 .user-icon {
@@ -173,6 +220,8 @@ body {
     border-radius: 20px;
 
     box-shadow: 0 10px 25px rgba(75, 82, 52, 0.13);
+
+    cursor: default;
 }
 
 .welcome-content {
@@ -244,6 +293,8 @@ body {
 
     background: transparent;
     z-index: 1;
+
+    cursor: default;
 }
 
 .welcome-image img {
@@ -260,15 +311,9 @@ body {
     object-fit: cover;
 
     transform: scale(1.08);
+
+    cursor: default;
 }
-
-
-/*
-   تصویر واضح می‌ماند.
-   فقط سمت راست تصویر،
-   یعنی سمت متن فارسی،
-   در پس‌زمینه محو می‌شود.
-*/
 
 .image-overlay {
     position: absolute;
@@ -317,12 +362,19 @@ body {
 
     min-height: 98px;
 
-    transition: 0.2s ease;
+    cursor: default;
+
+    /* بدون افکت Hover */
+    transition: none;
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
+    transform: none;
+    box-shadow: none;
+}
+
+.stat-card * {
+    cursor: default;
 }
 
 .stat-icon {
@@ -338,6 +390,8 @@ body {
     justify-content: center;
 
     font-size: 19px;
+
+    cursor: default;
 }
 
 .stat-icon.olive {
@@ -485,6 +539,8 @@ button {
 
     pointer-events: none;
     z-index: 2;
+
+    cursor: default;
 }
 
 input,
@@ -505,6 +561,12 @@ select {
     transition:
         border-color 0.2s,
         box-shadow 0.2s;
+
+    cursor: text;
+}
+
+select {
+    cursor: pointer;
 }
 
 input,
@@ -552,11 +614,17 @@ select:focus {
     background: #fffefa;
 
     transition: 0.2s ease;
+
+    cursor: default;
 }
 
 .task-card:hover {
     border-color: #c8b9a7;
     box-shadow: 0 7px 20px rgba(83, 65, 50, 0.05);
+}
+
+.task-card * {
+    cursor: default;
 }
 
 .task-title-row {
@@ -586,6 +654,13 @@ select:focus {
     min-height: 20px;
 }
 
+.task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 14px;
+}
+
 
 /* =========================
    STATUS
@@ -598,6 +673,8 @@ select:focus {
 
     font-size: 11px;
     white-space: nowrap;
+
+    cursor: default;
 }
 
 .status-pending {
@@ -620,13 +697,6 @@ select:focus {
    TASK META
 ========================= */
 
-.task-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-bottom: 14px;
-}
-
 .task-meta span {
     background: #f5f0e8;
 
@@ -639,6 +709,8 @@ select:focus {
     border-radius: 8px;
 
     font-size: 11px;
+
+    cursor: default;
 }
 
 
@@ -709,6 +781,12 @@ select:focus {
     border-radius: 13px;
 
     background: #fffefa;
+
+    cursor: default;
+}
+
+.reminder-card * {
+    cursor: default;
 }
 
 .reminder-icon {
@@ -727,6 +805,8 @@ select:focus {
     justify-content: center;
 
     font-size: 17px;
+
+    cursor: default;
 }
 
 .reminder-info {
@@ -1013,6 +1093,8 @@ select:focus {
     border-radius: 8px;
 
     color: var(--muted);
+
+    cursor: pointer;
 }
 
 .auth-tab.active {
@@ -1050,6 +1132,8 @@ select:focus {
     color: var(--brown);
 
     font-family: inherit;
+
+    cursor: pointer;
 }
 
 .guest-button:hover {
@@ -1161,11 +1245,6 @@ select:focus {
     .welcome-image img {
         transform: scale(1.03);
     }
-
-    /*
-       در موبایل چون عکس زیر متن قرار می‌گیرد،
-       محوشدن از بالا به پایین انجام می‌شود.
-    */
 
     .image-overlay {
         background:

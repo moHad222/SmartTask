@@ -1308,7 +1308,7 @@ async function deleteTask(taskId) {
 
     if (
         !confirm(
-            "آیا مطمئنی می‌خواهی این Task را حذف کنی؟"
+            "آیا از حذف کردنش مطمئن هستی؟"
         )
     ) {
         return;
