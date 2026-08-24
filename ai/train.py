@@ -1,56 +1,129 @@
+from pathlib import Path
+
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
 import joblib
 
-DATA_PATH = "data/training_data.csv"
-
-data = pd.read_csv(DATA_PATH)
-
-print(data.head())
-
-print("\nتعداد نمونه‌ها:", len(data))
-print("دسته‌ها:", data["category"].unique())
-
-X = data["text"]
-y = data["category"]
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 
 
-vectorizer = TfidfVectorizer(
-    analyzer="word",
-    ngram_range=(1, 2)
+# =========================================================
+# PATHS
+# =========================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+
+DATA_PATH = (
+    BASE_DIR.parent
+    / "data"
+    / "training_data.csv"
 )
 
-X_vectorized = vectorizer.fit_transform(X)
+MODEL_PATH = (
+    BASE_DIR
+    / "task_classifier.pkl"
+)
+
+VECTORIZER_PATH = (
+    BASE_DIR
+    / "task_vectorizer.pkl"
+)
 
 
-model = MultinomialNB()
+# =========================================================
+# LOAD DATA
+# =========================================================
 
-model.fit(X_vectorized, y)
+df = pd.read_csv(
+    DATA_PATH
+)
+
+df["text"] = (
+    df["text"]
+    .astype(str)
+    .str.lower()
+    .str.strip()
+)
+
+df["category"] = (
+    df["category"]
+    .astype(str)
+    .str.strip()
+)
 
 
-print("\nModel trained successfully!")
+# =========================================================
+# VECTORIZE
+# =========================================================
 
-test_tasks = [
-    "تحویل پروژه پایگاه داده",
-    "رفع باگ برنامه پایتون",
-    "خرید مواد غذایی",
-    "پرداخت قبض برق",
-    "جلسه با مدیر",
-    "مرتب کردن اتاق"
-]
-
-
-test_vectors = vectorizer.transform(test_tasks)
-predictions = model.predict(test_vectors)
+vectorizer = TfidfVectorizer(
+    analyzer="char_wb",
+    ngram_range=(2, 5),
+    min_df=1
+)
 
 
-print("\nTest predictions:")
+X = vectorizer.fit_transform(
+    df["text"]
+)
 
-for task, prediction in zip(test_tasks, predictions):
-    print(f"{task} → {prediction}")
+y = df["category"]
 
-joblib.dump(model, "ai/task_classifier.pkl")
-joblib.dump(vectorizer, "ai/task_vectorizer.pkl")
 
-print("\nModel and vectorizer saved successfully!")
+# =========================================================
+# TRAIN
+# =========================================================
+
+model = LogisticRegression(
+    max_iter=2000,
+    random_state=42
+)
+
+model.fit(
+    X,
+    y
+)
+
+
+# =========================================================
+# SAVE
+# =========================================================
+
+joblib.dump(
+    model,
+    MODEL_PATH
+)
+
+joblib.dump(
+    vectorizer,
+    VECTORIZER_PATH
+)
+
+
+# =========================================================
+# RESULT
+# =========================================================
+
+print(
+    "مدل با موفقیت آموزش داده شد."
+)
+
+print(
+    "دسته‌ها:",
+    list(model.classes_)
+)
+
+print(
+    "تعداد نمونه‌ها:",
+    len(df)
+)
+
+print(
+    "Model:",
+    MODEL_PATH
+)
+
+print(
+    "Vectorizer:",
+    VECTORIZER_PATH
+)

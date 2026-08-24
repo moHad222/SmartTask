@@ -1,11 +1,65 @@
+from pathlib import Path
+import joblib
+
 from database.database import CATEGORIES
 
 
 # =========================================================
-# SIMPLE LOCAL AI CLASSIFIER
+# PATHS
 # =========================================================
 
-KEYWORDS = {
+BASE_DIR = Path(__file__).resolve().parent
+
+MODEL_PATH = BASE_DIR / "task_classifier.pkl"
+VECTORIZER_PATH = BASE_DIR / "task_vectorizer.pkl"
+
+
+# =========================================================
+# LOAD MODEL
+# =========================================================
+
+_model = None
+_vectorizer = None
+
+
+def load_model():
+
+    global _model
+    global _vectorizer
+
+    if _model is None or _vectorizer is None:
+
+        _model = joblib.load(MODEL_PATH)
+        _vectorizer = joblib.load(VECTORIZER_PATH)
+
+
+# =========================================================
+# NORMALIZE
+# =========================================================
+
+def normalize_text(text):
+
+    text = str(text).lower().strip()
+
+    replacements = {
+        "ي": "ی",
+        "ى": "ی",
+        "ك": "ک",
+        "ۀ": "ه",
+        "ة": "ه",
+    }
+
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    return text
+
+
+# =========================================================
+# IMPORTANT KEYWORDS
+# =========================================================
+
+CATEGORY_KEYWORDS = {
 
     "دانشگاه": [
         "دانشگاه",
@@ -13,52 +67,65 @@ KEYWORDS = {
         "امتحان",
         "کلاس",
         "ترم",
-        "پروژه",
         "درس",
-        "تمرین",
-        "تحقیق",
-        "گزارش",
-        "کارآموزی",
+        "تکلیف",
+        "پروژه درسی",
+        "پروژه دانشگاه",
         "پایان نامه",
         "پایان‌نامه",
+        "آزمایشگاه",
+        "ارائه کلاسی",
+        "پایگاه داده",
     ],
 
     "برنامه نویسی": [
-        "python",
         "پایتون",
-        "برنامه",
+        "python",
         "کد",
         "کدنویسی",
         "برنامه نویسی",
         "برنامه‌نویسی",
+        "باگ",
+        "خطای کد",
+        "دیباگ",
+        "دیتابیس",
+        "database",
+        "api",
         "javascript",
         "جاوا",
         "html",
         "css",
-        "database",
-        "دیتابیس",
-        "api",
-        "پروژه نرم افزار",
         "نرم افزار",
         "نرم‌افزار",
+        "پیاده سازی",
+        "پیاده‌سازی",
+        "برنامه",
     ],
 
     "کاری": [
-        "کار",
-        "شرکت",
-        "جلسه",
-        "مشتری",
         "مدیر",
-        "اداری",
-        "گزارش کاری",
-        "پروپوزال",
+        "شرکت",
+        "مشتری",
         "همکار",
-        "دفتر",
+        "جلسه کاری",
+        "جلسه با مدیر",
+        "وظیفه",
+        "درخواست مشتری",
+        "گزارش کاری",
+        "ایمیل کاری",
+        "کار شرکت",
     ],
 
     "شخصی": [
+        "باشگاه",
         "ورزش",
-        "مطالعه",
+        "بدنسازی",
+        "فیتنس",
+        "شنا",
+        "دویدن",
+        "پیاده روی",
+        "پیاده‌روی",
+        "یوگا",
         "استراحت",
         "خواب",
         "خانه",
@@ -66,92 +133,127 @@ KEYWORDS = {
         "تمیزکاری",
         "آشپزی",
         "فیلم",
-        "کتاب",
+        "سریال",
         "موسیقی",
-        "شخصی",
+        "دوست",
+        "خودم",
+        "وقت برای خودم",
     ],
 
     "خرید": [
         "خرید",
+        "خریدن",
+        "بخرم",
+        "بگیرم",
+        "تهیه کنم",
+        "تهیه",
         "فروشگاه",
         "سوپرمارکت",
         "لباس",
         "کفش",
         "کیف",
         "لوازم",
-        "خریدن",
+        "وسایل",
+        "مواد غذایی",
         "سفارش",
     ],
 
     "مالی": [
         "پول",
         "بانک",
+        "حساب",
         "قسط",
         "قبض",
         "پرداخت",
         "حقوق",
         "بودجه",
         "هزینه",
-        "مالی",
+        "خرج",
+        "خرج کردم",
+        "درآمد",
+        "تراکنش",
+        "بدهی",
         "وام",
+        "مالی",
     ],
 }
 
 
-def normalize_text(text):
-
-    text = str(text).lower()
-
-    replacements = {
-        "ي": "ی",
-        "ك": "ک",
-        "ۀ": "ه",
-        "ة": "ه",
-    }
-
-    for old, new in replacements.items():
-
-        text = text.replace(
-            old,
-            new
-        )
-
-    return text
-
+# =========================================================
+# PREDICT
+# =========================================================
 
 def predict_category(title):
 
     text = normalize_text(title)
 
-    scores = {
+    if not text:
+        return "تعیین نشده"
+
+    load_model()
+
+    # -----------------------------------------------------
+    # Rule-based score
+    # -----------------------------------------------------
+
+    keyword_scores = {
         category: 0
         for category in CATEGORIES
     }
 
-    for category in CATEGORIES:
+    for category, keywords in CATEGORY_KEYWORDS.items():
 
-        words = KEYWORDS.get(
-            category,
-            []
-        )
+        for keyword in keywords:
 
-        for word in words:
+            keyword = normalize_text(keyword)
 
-            word = normalize_text(
-                word
-            )
+            if keyword in text:
+                keyword_scores[category] += 1
 
-            if word in text:
-
-                scores[category] += 1
-
-    best_category = max(
-        scores,
-        key=scores.get
+    # اگر عبارت خیلی واضح باشد، همان دسته را انتخاب کن
+    best_keyword_category = max(
+        keyword_scores,
+        key=keyword_scores.get
     )
 
-    if scores[best_category] == 0:
+    best_keyword_score = keyword_scores[
+        best_keyword_category
+    ]
 
+    if best_keyword_score >= 1:
+
+        return best_keyword_category
+
+    # -----------------------------------------------------
+    # ML prediction
+    # -----------------------------------------------------
+
+    vector = _vectorizer.transform(
+        [text]
+    )
+
+    probabilities = _model.predict_proba(
+        vector
+    )[0]
+
+    best_index = probabilities.argmax()
+
+    confidence = probabilities[
+        best_index
+    ]
+
+    category = _model.classes_[
+        best_index
+    ]
+
+    # -----------------------------------------------------
+    # Confidence threshold
+    # -----------------------------------------------------
+
+    if confidence < 0.35:
         return "تعیین نشده"
 
-    return best_category
+    if category not in CATEGORIES:
+        return "تعیین نشده"
+
+    return category

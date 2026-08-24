@@ -15,17 +15,13 @@ let currentUser = {
 };
 
 
-// =========================================================
+// =========================
 // HELPERS
-// =========================================================
+// =========================
 
-function $(id) {
-    return document.getElementById(id);
-}
-
+const $ = id => document.getElementById(id);
 
 function escapeHtml(value) {
-
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -35,105 +31,51 @@ function escapeHtml(value) {
 }
 
 
-// =========================================================
+// =========================
 // START
-// =========================================================
+// =========================
 
-document.addEventListener(
-    "DOMContentLoaded",
-    initializeApp
-);
-
+document.addEventListener("DOMContentLoaded", initializeApp);
 
 async function initializeApp() {
 
-    console.log(
-        "SmartTask3 JS started"
-    );
-
-    // مهم:
-    // Eventها باید حتی اگر یکی از APIها خطا داد،
-    // حتماً فعال شوند.
-
     setupEvents();
-
     updateUserUI();
 
-
     try {
-
         await loadSession();
-
     } catch (error) {
-
-        console.error(
-            "Session error:",
-            error
-        );
-
+        console.error("Session error:", error);
     }
 
-
     try {
-
         await loadOptions();
-
     } catch (error) {
-
-        console.error(
-            "Options error:",
-            error
-        );
-
+        console.error("Options error:", error);
     }
-
 
     try {
-
         await loadTasks();
-
     } catch (error) {
-
-        console.error(
-            "Tasks error:",
-            error
-        );
-
+        console.error("Tasks error:", error);
     }
 
-
-    updateUserUI();
-
-
-    console.log(
-        "SmartTask3 initialized"
-    );
 }
 
 
-// =========================================================
+// =========================
 // SESSION
-// =========================================================
+// =========================
 
 async function loadSession() {
 
-    const response =
-        await fetch(
-            "/api/session"
-        );
-
+    const response = await fetch("/api/session");
 
     if (!response.ok) {
-
-        throw new Error(
-            "دریافت اطلاعات کاربر ناموفق بود."
-        );
+        throw new Error("دریافت اطلاعات کاربر ناموفق بود.");
     }
 
-
-    currentUser =
-        await response.json();
-
+    currentUser = await response.json();
 
     updateUserUI();
 }
@@ -141,252 +83,101 @@ async function loadSession() {
 
 function updateUserUI() {
 
-    const username =
-        currentUser.username ||
-        "مهمان";
-
+    const username = currentUser.username || "مهمان";
 
     if ($("currentUsername")) {
-
-        $("currentUsername")
-            .textContent = username;
+        $("currentUsername").textContent = username;
     }
-
 
     if ($("welcomeTitle")) {
-
-        if (currentUser.is_guest) {
-
-            $("welcomeTitle")
-                .textContent =
-                "سلام 👋";
-
-        } else {
-
-            $("welcomeTitle")
-                .textContent =
-                `سلام ${username} 👋`;
-        }
+        $("welcomeTitle").textContent =
+            currentUser.is_guest
+                ? "سلام 👋"
+                : `سلام ${username} 👋`;
     }
-
 
     if ($("welcomeText")) {
-
-        if (currentUser.is_guest) {
-
-            $("welcomeText")
-                .textContent =
-                "کارهای امروزت رو مدیریت کن و چیزی رو فراموش نکن.";
-
-        } else {
-
-            $("welcomeText")
-                .textContent =
-                `${username}، کارهات رو مدیریت کن و چیزی رو فراموش نکن.`;
-        }
+        $("welcomeText").textContent =
+            currentUser.is_guest
+                ? "کارهای امروزت رو مدیریت کن و چیزی رو فراموش نکن."
+                : `${username}، کارهات رو مدیریت کن و چیزی رو فراموش نکن.`;
     }
 
+    $("loginButton")?.classList.toggle(
+        "hidden",
+        !currentUser.is_guest
+    );
 
-    const loginButton =
-        $("loginButton");
-
-
-    const logoutButton =
-        $("logoutButton");
-
-
-    if (currentUser.is_guest) {
-
-        loginButton?.classList.remove(
-            "hidden"
-        );
-
-        logoutButton?.classList.add(
-            "hidden"
-        );
-
-    } else {
-
-        loginButton?.classList.add(
-            "hidden"
-        );
-
-        logoutButton?.classList.remove(
-            "hidden"
-        );
-    }
+    $("logoutButton")?.classList.toggle(
+        "hidden",
+        currentUser.is_guest
+    );
 }
 
 
-// =========================================================
+// =========================
 // OPTIONS
-// =========================================================
+// =========================
 
 async function loadOptions() {
 
-    const response =
-        await fetch(
-            "/api/options"
-        );
-
+    const response = await fetch("/api/options");
 
     if (!response.ok) {
-
-        throw new Error(
-            "دریافت تنظیمات ناموفق بود."
-        );
+        throw new Error("دریافت تنظیمات ناموفق بود.");
     }
 
+    options = await response.json();
 
-    options =
-        await response.json();
+    fillSelect(
+        $("categoryFilter"),
+        options.categories,
+        "همه دسته‌بندی‌ها"
+    );
 
+    fillSelect(
+        $("priorityFilter"),
+        options.priorities,
+        "همه اولویت‌ها"
+    );
 
-    fillCategoryFilter();
-
-    fillPriorityFilter();
-
-    fillPrioritySelect();
-}
-
-
-// =========================================================
-// CATEGORY FILTER
-// =========================================================
-
-function fillCategoryFilter() {
-
-    const select =
-        $("categoryFilter");
-
-
-    if (!select) return;
-
-
-    select.innerHTML = `
-        <option value="">
-            همه دسته‌بندی‌ها
-        </option>
-    `;
-
-
-    options.categories.forEach(
-        category => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                category;
-
-
-            option.textContent =
-                category;
-
-
-            select.appendChild(
-                option
-            );
-
-        }
+    fillSelect(
+        $("priority"),
+        options.priorities
     );
 }
 
 
-// =========================================================
-// PRIORITY FILTER
-// =========================================================
-
-function fillPriorityFilter() {
-
-    const select =
-        $("priorityFilter");
-
+function fillSelect(select, values, defaultText = null) {
 
     if (!select) return;
-
-
-    select.innerHTML = `
-        <option value="">
-            همه اولویت‌ها
-        </option>
-    `;
-
-
-    options.priorities.forEach(
-        priority => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                priority;
-
-
-            option.textContent =
-                priority;
-
-
-            select.appendChild(
-                option
-            );
-
-        }
-    );
-}
-
-
-// =========================================================
-// PRIORITY SELECT
-// =========================================================
-
-function fillPrioritySelect() {
-
-    const select =
-        $("priority");
-
-
-    if (!select) return;
-
 
     select.innerHTML = "";
 
+    if (defaultText !== null) {
+        const option = document.createElement("option");
 
-    options.priorities.forEach(
-        priority => {
+        option.value = "";
+        option.textContent = defaultText;
 
-            const option =
-                document.createElement(
-                    "option"
-                );
+        select.appendChild(option);
+    }
 
+    values.forEach(value => {
 
-            option.value =
-                priority;
+        const option = document.createElement("option");
 
+        option.value = value;
+        option.textContent = value;
 
-            option.textContent =
-                priority;
-
-
-            select.appendChild(
-                option
-            );
-
-        }
-    );
+        select.appendChild(option);
+    });
 }
 
 
-// =========================================================
+// =========================
 // EVENTS
-// =========================================================
+// =========================
 
 function setupEvents() {
 
@@ -395,112 +186,83 @@ function setupEvents() {
         openCreateModal
     );
 
-
     $("closeTaskModal")?.addEventListener(
         "click",
         closeTaskModal
     );
-
 
     $("cancelTask")?.addEventListener(
         "click",
         closeTaskModal
     );
 
-
     $("taskForm")?.addEventListener(
         "submit",
         handleTaskSubmit
     );
-
 
     $("predictCategory")?.addEventListener(
         "click",
         predictCategory
     );
 
+    [
+        "taskSearch",
+        "categoryFilter",
+        "priorityFilter",
+        "statusFilter",
+        "dueDateFilter"
+    ].forEach(id => {
 
-    $("taskSearch")?.addEventListener(
-        "input",
-        applyFilters
-    );
+        $(id)?.addEventListener(
+            id === "taskSearch" ? "input" : "change",
+            applyFilters
+        );
 
-
-    $("categoryFilter")?.addEventListener(
-        "change",
-        applyFilters
-    );
-
-
-    $("priorityFilter")?.addEventListener(
-        "change",
-        applyFilters
-    );
+    });
 
 
-    $("statusFilter")?.addEventListener(
-        "change",
-        applyFilters
-    );
-
-
-    $("dueDateFilter")?.addEventListener(
-        "change",
-        applyFilters
-    );
-
-
-    // -----------------------------------------------------
-    // AUTH
-    // -----------------------------------------------------
+    // Auth
 
     $("loginButton")?.addEventListener(
         "click",
         openAuthModal
     );
 
-
     $("closeAuthModal")?.addEventListener(
         "click",
         closeAuthModal
     );
-
 
     $("loginTab")?.addEventListener(
         "click",
         () => showAuthTab("login")
     );
 
-
     $("registerTab")?.addEventListener(
         "click",
         () => showAuthTab("register")
     );
-
 
     $("loginForm")?.addEventListener(
         "submit",
         loginUser
     );
 
-
     $("registerForm")?.addEventListener(
         "submit",
         registerUser
     );
-
 
     $("guestButton")?.addEventListener(
         "click",
         continueAsGuest
     );
 
-
     $("guestButtonRegister")?.addEventListener(
         "click",
         continueAsGuest
     );
-
 
     $("logoutButton")?.addEventListener(
         "click",
@@ -508,75 +270,37 @@ function setupEvents() {
     );
 
 
-    // -----------------------------------------------------
-    // TASK MODAL BACKDROP
-    // -----------------------------------------------------
+    // Modal backdrop
 
-    const taskModal =
-        $("taskModal");
+    $("taskModal")?.addEventListener(
+        "click",
+        event => {
 
-
-    if (taskModal) {
-
-        taskModal.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target ===
-                    taskModal
-                ) {
-
-                    closeTaskModal();
-                }
-
+            if (event.target === $("taskModal")) {
+                closeTaskModal();
             }
-        );
-    }
 
+        }
+    );
 
-    // -----------------------------------------------------
-    // AUTH MODAL BACKDROP
-    // -----------------------------------------------------
+    $("authModal")?.addEventListener(
+        "click",
+        event => {
 
-    const authModal =
-        $("authModal");
-
-
-    if (authModal) {
-
-        authModal.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target ===
-                    authModal
-                ) {
-
-                    closeAuthModal();
-                }
-
+            if (event.target === $("authModal")) {
+                closeAuthModal();
             }
-        );
-    }
 
+        }
+    );
 
-    // -----------------------------------------------------
-    // ESC
-    // -----------------------------------------------------
 
     document.addEventListener(
         "keydown",
         event => {
 
-            if (
-                event.key ===
-                "Escape"
-            ) {
-
+            if (event.key === "Escape") {
                 closeTaskModal();
-
                 closeAuthModal();
             }
 
@@ -585,40 +309,24 @@ function setupEvents() {
 }
 
 
-// =========================================================
+// =========================
 // AUTH MODAL
-// =========================================================
+// =========================
 
 function openAuthModal() {
 
-    const modal =
-        $("authModal");
-
+    const modal = $("authModal");
 
     if (!modal) return;
 
-
     showAuthTab("login");
-
-
     clearAuthMessages();
 
-
-    modal.classList.add(
-        "active"
-    );
-
-
-    modal.style.display =
-        "flex";
-
+    modal.classList.add("active");
+    modal.style.display = "flex";
 
     setTimeout(
-        () => {
-
-            $("loginUsername")?.focus();
-
-        },
+        () => $("loginUsername")?.focus(),
         100
     );
 }
@@ -626,17 +334,12 @@ function openAuthModal() {
 
 function closeAuthModal() {
 
-    const modal =
-        $("authModal");
+    const modal = $("authModal");
 
     if (!modal) return;
 
-    modal.classList.remove(
-        "active"
-    );
-
-    modal.style.display =
-        "none";
+    modal.classList.remove("active");
+    modal.style.display = "none";
 
     clearAuthMessages();
 
@@ -645,83 +348,37 @@ function closeAuthModal() {
 }
 
 
-function showAuthTab(
-    tab
-) {
+function showAuthTab(tab) {
 
-    const loginTab =
-        $("loginTab");
+    const login =
+        tab === "login";
 
+    $("loginTab")?.classList.toggle(
+        "active",
+        login
+    );
 
-    const registerTab =
-        $("registerTab");
+    $("registerTab")?.classList.toggle(
+        "active",
+        !login
+    );
 
+    $("loginForm")?.classList.toggle(
+        "hidden",
+        !login
+    );
 
-    const loginForm =
-        $("loginForm");
+    $("registerForm")?.classList.toggle(
+        "hidden",
+        login
+    );
 
-
-    const registerForm =
-        $("registerForm");
-
-
-    const title =
-        $("authTitle");
-
-
-    if (tab === "login") {
-
-        loginTab?.classList.add(
-            "active"
-        );
-
-        registerTab?.classList.remove(
-            "active"
-        );
-
-
-        loginForm?.classList.remove(
-            "hidden"
-        );
-
-        registerForm?.classList.add(
-            "hidden"
-        );
-
-
-        if (title) {
-
-            title.textContent =
-                "ورود به حساب";
-        }
-
-    } else {
-
-        registerTab?.classList.add(
-            "active"
-        );
-
-        loginTab?.classList.remove(
-            "active"
-        );
-
-
-        registerForm?.classList.remove(
-            "hidden"
-        );
-
-        loginForm?.classList.add(
-            "hidden"
-        );
-
-
-        if (title) {
-
-            title.textContent =
-                "ساخت حساب جدید";
-        }
+    if ($("authTitle")) {
+        $("authTitle").textContent =
+            login
+                ? "ورود به حساب"
+                : "ساخت حساب جدید";
     }
-
 
     clearAuthMessages();
 }
@@ -729,26 +386,15 @@ function showAuthTab(
 
 function clearAuthMessages() {
 
-    if ($("loginMessage")) {
+    ["loginMessage", "registerMessage"].forEach(id => {
 
-        $("loginMessage")
-            .textContent = "";
+        const element = $(id);
 
-        $("loginMessage")
-            .className =
-            "auth-message";
-    }
+        if (!element) return;
 
-
-    if ($("registerMessage")) {
-
-        $("registerMessage")
-            .textContent = "";
-
-        $("registerMessage")
-            .className =
-            "auth-message";
-    }
+        element.textContent = "";
+        element.className = "auth-message";
+    });
 }
 
 
@@ -758,44 +404,28 @@ function showAuthMessage(
     type = "error"
 ) {
 
-    const element =
-        $(elementId);
-
+    const element = $(elementId);
 
     if (!element) return;
 
-
-    element.textContent =
-        message;
-
-
-    element.className =
-        `auth-message ${type}`;
+    element.textContent = message;
+    element.className = `auth-message ${type}`;
 }
 
 
-// =========================================================
+// =========================
 // LOGIN
-// =========================================================
+// =========================
 
-async function loginUser(
-    event
-) {
+async function loginUser(event) {
 
     event.preventDefault();
 
-
     const username =
-        $("loginUsername")
-            ?.value
-            .trim();
-
+        $("loginUsername")?.value.trim();
 
     const password =
-        $("loginPassword")
-            ?.value
-        || "";
-
+        $("loginPassword")?.value || "";
 
     if (!username || !password) {
 
@@ -807,82 +437,49 @@ async function loginUser(
         return;
     }
 
-
     try {
 
-        const response =
-            await fetch(
-                "/api/login",
-                {
+        const response = await fetch(
+            "/api/login",
+            {
+                method: "POST",
 
-                    method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                body: JSON.stringify({
+                    username,
+                    password
+                })
+            }
+        );
 
-                    body:
-                        JSON.stringify({
-                            username,
-                            password
-                        })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
-                data.error ||
-                "ورود انجام نشد."
+                data.error || "ورود انجام نشد."
             );
         }
 
-
         currentUser = {
-
-            username:
-                data.username,
-
-            logged_in:
-                true,
-
-            is_guest:
-                false
-
+            username: data.username,
+            logged_in: true,
+            is_guest: false
         };
 
-
         updateUserUI();
-
-
         closeAuthModal();
-
-
         resetFilters();
-
 
         await loadTasks();
 
-
-        alert(
-            `سلام ${data.username} 👋 خوش اومدی`
-        );
-
+        alert(`سلام ${data.username} 👋 خوش اومدی`);
 
     } catch (error) {
 
-        console.error(
-            "Login error:",
-            error
-        );
-
+        console.error("Login error:", error);
 
         showAuthMessage(
             "loginMessage",
@@ -892,34 +489,22 @@ async function loginUser(
 }
 
 
-// =========================================================
+// =========================
 // REGISTER
-// =========================================================
+// =========================
 
-async function registerUser(
-    event
-) {
+async function registerUser(event) {
 
     event.preventDefault();
 
-
     const username =
-        $("registerUsername")
-            ?.value
-            .trim();
-
+        $("registerUsername")?.value.trim();
 
     const password =
-        $("registerPassword")
-            ?.value
-        || "";
-
+        $("registerPassword")?.value || "";
 
     const repeatPassword =
-        $("registerPasswordRepeat")
-            ?.value
-        || "";
-
+        $("registerPasswordRepeat")?.value || "";
 
     if (!username || !password) {
 
@@ -931,11 +516,7 @@ async function registerUser(
         return;
     }
 
-
-    if (
-        password !==
-        repeatPassword
-    ) {
+    if (password !== repeatPassword) {
 
         showAuthMessage(
             "registerMessage",
@@ -945,82 +526,51 @@ async function registerUser(
         return;
     }
 
-
     try {
 
-        const response =
-            await fetch(
-                "/api/register",
-                {
+        const response = await fetch(
+            "/api/register",
+            {
+                method: "POST",
 
-                    method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                body: JSON.stringify({
+                    username,
+                    password
+                })
+            }
+        );
 
-                    body:
-                        JSON.stringify({
-                            username,
-                            password
-                        })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
-                data.error ||
-                "ثبت‌نام انجام نشد."
+                data.error || "ثبت‌نام انجام نشد."
             );
         }
 
-
         currentUser = {
-
-            username:
-                data.username,
-
-            logged_in:
-                true,
-
-            is_guest:
-                false
-
+            username: data.username,
+            logged_in: true,
+            is_guest: false
         };
 
-
         updateUserUI();
-
-
         closeAuthModal();
-
-
         resetFilters();
 
-
         await loadTasks();
-
 
         alert(
             `حساب ${data.username} ساخته شد 👋 خوش اومدی`
         );
 
-
     } catch (error) {
 
-        console.error(
-            "Register error:",
-            error
-        );
-
+        console.error("Register error:", error);
 
         showAuthMessage(
             "registerMessage",
@@ -1030,267 +580,157 @@ async function registerUser(
 }
 
 
-// =========================================================
+// =========================
 // GUEST
-// =========================================================
+// =========================
 
 async function continueAsGuest() {
 
     try {
 
-        const response =
-            await fetch(
-                "/api/guest",
-                {
-                    method: "POST"
-                }
-            );
+        const response = await fetch(
+            "/api/guest",
+            {
+                method: "POST"
+            }
+        );
 
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
                 data.error ||
                 "ورود به حالت مهمان انجام نشد."
             );
         }
 
-
         currentUser = {
-
-            username:
-                "مهمان",
-
-            logged_in:
-                false,
-
-            is_guest:
-                true
-
+            username: "مهمان",
+            logged_in: false,
+            is_guest: true
         };
 
-
         updateUserUI();
-
-
         closeAuthModal();
-
-
         resetFilters();
-
 
         await loadTasks();
 
-
     } catch (error) {
 
-        alert(
-            "خطا: " +
-            error.message
-        );
+        alert("خطا: " + error.message);
     }
 }
 
 
-// =========================================================
+// =========================
 // LOGOUT
-// =========================================================
+// =========================
 
 async function logoutUser() {
 
-    if (
-        !confirm(
-            "آیا می‌خواهی از حساب خارج شوی؟"
-        )
-    ) {
-
+    if (!confirm("آیا می‌خواهی از حساب خارج شوی؟")) {
         return;
     }
 
-
     try {
 
-        const response =
-            await fetch(
-                "/api/logout",
-                {
-                    method: "POST"
-                }
-            );
+        const response = await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
+        );
 
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
-                data.error ||
-                "خروج انجام نشد."
+                data.error || "خروج انجام نشد."
             );
         }
 
-
         currentUser = {
-
-            username:
-                "مهمان",
-
-            logged_in:
-                false,
-
-            is_guest:
-                true
-
+            username: "مهمان",
+            logged_in: false,
+            is_guest: true
         };
 
-
         updateUserUI();
-
-
         resetFilters();
 
-
         await loadTasks();
-
 
         alert(
             "از حساب خارج شدی و اکنون به‌عنوان مهمان هستی."
         );
 
-
     } catch (error) {
 
-        alert(
-            "خطا: " +
-            error.message
-        );
+        alert("خطا: " + error.message);
     }
 }
 
 
-// =========================================================
-// TASK MODAL - CREATE
-// =========================================================
+// =========================
+// TASK MODAL
+// =========================
 
 function openCreateModal() {
 
     editingTaskId = null;
 
-
     resetTaskForm();
+    setModalMode(false);
 
-
-    setModalMode(
-        false
-    );
-
-
-    const modal =
-        $("taskModal");
-
+    const modal = $("taskModal");
 
     if (!modal) return;
 
-
-    modal.classList.add(
-        "active"
-    );
-
-
-    modal.style.display =
-        "flex";
-
+    modal.classList.add("active");
+    modal.style.display = "flex";
 
     setTimeout(
-        () => {
-
-            $("title")?.focus();
-
-        },
+        () => $("title")?.focus(),
         100
     );
 }
 
 
-// =========================================================
-// TASK MODAL - EDIT
-// =========================================================
+function openEditModal(taskId) {
 
-function openEditModal(
-    taskId
-) {
-
-    const task =
-        allTasks.find(
-            item =>
-                Number(item.id) ===
-                Number(taskId)
-        );
-
+    const task = allTasks.find(
+        item => Number(item.id) === Number(taskId)
+    );
 
     if (!task) {
-
-        alert(
-            "Task پیدا نشد."
-        );
-
+        alert("Task پیدا نشد.");
         return;
     }
 
+    editingTaskId = Number(task.id);
 
-    editingTaskId =
-        Number(task.id);
+    setModalMode(true);
 
-
-    setModalMode(
-        true
-    );
-
-
-    $("title").value =
-        task.title || "";
-
-
-    $("description").value =
-        task.description || "";
-
-
-    $("priority").value =
-        task.priority ||
-        "معمولی";
-
-
-    $("dueDate").value =
-        task.due_date || "";
-
+    $("title").value = task.title || "";
+    $("description").value = task.description || "";
+    $("priority").value = task.priority || "معمولی";
+    $("dueDate").value = task.due_date || "";
 
     $("reminderAt").value =
-        convertReminderForInput(
-            task.reminder_at
-        );
+        convertReminderForInput(task.reminder_at);
 
-
-    const result =
-        $("categoryResult");
-
+    const result = $("categoryResult");
 
     if (result) {
 
         result.dataset.category =
             task.category || "";
 
-
         result.textContent =
             task.category
                 ? `دسته‌بندی فعلی: ${task.category}`
                 : "";
-
 
         result.classList.toggle(
             "hidden",
@@ -1298,239 +738,111 @@ function openEditModal(
         );
     }
 
-
-    const modal =
-        $("taskModal");
-
+    const modal = $("taskModal");
 
     if (!modal) return;
 
-
-    modal.classList.add(
-        "active"
-    );
-
-
-    modal.style.display =
-        "flex";
-
+    modal.classList.add("active");
+    modal.style.display = "flex";
 
     setTimeout(
-        () => {
-
-            $("title")?.focus();
-
-        },
+        () => $("title")?.focus(),
         100
     );
 }
 
 
-// =========================================================
-// MODAL MODE
-// =========================================================
+function setModalMode(isEdit) {
 
-function setModalMode(
-    isEdit
-) {
-
-    const modal =
-        $("taskModal");
-
+    const modal = $("taskModal");
 
     if (!modal) return;
 
-
     const title =
-        modal.querySelector(
-            ".modal-header h2"
-        );
+        modal.querySelector(".modal-header h2");
 
-
-    const submitButton =
-        modal.querySelector(
-            ".submit-button"
-        );
-
+    const submit =
+        modal.querySelector(".submit-button");
 
     if (isEdit) {
 
-        if (title) {
-
-            title.textContent =
-                "ویرایش Task";
-        }
-
-
-        if (submitButton) {
-
-            submitButton.textContent =
-                "ذخیره تغییرات";
-        }
-
+        if (title) title.textContent = "ویرایش Task";
+        if (submit) submit.textContent = "ذخیره تغییرات";
 
     } else {
 
-        if (title) {
-
-            title.textContent =
-                "افزودن Task جدید";
-        }
-
-
-        if (submitButton) {
-
-            submitButton.textContent =
-                "ثبت Task";
-        }
+        if (title) title.textContent = "افزودن Task جدید";
+        if (submit) submit.textContent = "ثبت Task";
     }
 }
 
-
-// =========================================================
-// CLOSE TASK MODAL
-// =========================================================
 
 function closeTaskModal() {
 
-    const modal =
-        $("taskModal");
-
+    const modal = $("taskModal");
 
     if (!modal) return;
 
-
-    modal.classList.remove(
-        "active"
-    );
-
-
-    modal.style.display =
-        "none";
-
+    modal.classList.remove("active");
+    modal.style.display = "none";
 
     editingTaskId = null;
 
-
     resetTaskForm();
-
-
-    setModalMode(
-        false
-    );
+    setModalMode(false);
 }
 
-
-// =========================================================
-// RESET FORM
-// =========================================================
 
 function resetTaskForm() {
 
-    const form =
-        $("taskForm");
+    $("taskForm")?.reset();
 
+    const result = $("categoryResult");
 
-    if (form) {
+    if (!result) return;
 
-        form.reset();
-    }
+    result.textContent = "";
+    result.classList.add("hidden");
 
-
-    const result =
-        $("categoryResult");
-
-
-    if (result) {
-
-        result.textContent = "";
-
-        result.classList.add(
-            "hidden"
-        );
-
-        delete result.dataset.category;
-    }
+    delete result.dataset.category;
 }
 
 
-// =========================================================
+// =========================
 // LOAD TASKS
-// =========================================================
+// =========================
 
 async function loadTasks() {
 
-    try {
+    const response = await fetch("/api/tasks");
 
-        const response =
-            await fetch(
-                "/api/tasks"
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "دریافت Taskها ناموفق بود."
-            );
-        }
-
-
-        allTasks =
-            await response.json();
-
-
-        renderTasks(
-            allTasks
-        );
-
-
-        updateDashboard(
-            allTasks
-        );
-
-
-        renderReminders(
-            allTasks
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Load tasks error:",
-            error
-        );
-
-        throw error;
+    if (!response.ok) {
+        throw new Error("دریافت Taskها ناموفق بود.");
     }
+
+    allTasks = await response.json();
+
+    renderTasks(allTasks);
+    updateDashboard(allTasks);
+    renderReminders(allTasks);
 }
 
 
-// =========================================================
+// =========================
 // RENDER TASKS
-// =========================================================
+// =========================
 
-function renderTasks(
-    tasks
-) {
+function renderTasks(tasks) {
 
-    const list =
-        $("taskList");
-
+    const list = $("taskList");
 
     if (!list) return;
-
 
     if (!tasks.length) {
 
         list.innerHTML = `
-
             <div class="empty-state">
-
-                <div class="empty-icon">
-                    📋
-                </div>
+                <div class="empty-icon">📋</div>
 
                 <h3>
                     هنوز Taskای نداری
@@ -1540,603 +852,332 @@ function renderTasks(
                     برای ایجاد یک Task جدید
                     روی «افزودن Task» بزن.
                 </p>
-
             </div>
-
         `;
 
         return;
     }
 
-
     list.innerHTML = "";
 
+    tasks.forEach(task => {
 
-    tasks.forEach(
-        task => {
+        const card = document.createElement("div");
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+        card.className = "task-card";
 
+        card.innerHTML = `
+            <div class="task-content">
 
-            card.className =
-                "task-card";
+                <div class="task-title-row">
 
+                    <h3>
+                        ${escapeHtml(task.title)}
+                    </h3>
 
-            const statusClass =
-                getStatusClass(
-                    task.status
-                );
-
-
-            card.innerHTML = `
-
-                <div class="task-content">
-
-                    <div class="task-title-row">
-
-                        <h3>
-                            ${escapeHtml(
-                                task.title
-                            )}
-                        </h3>
-
-                        <span
-                            class="status-badge ${statusClass}"
-                        >
-                            ${escapeHtml(
-                                task.status
-                            )}
-                        </span>
-
-                    </div>
-
-
-                    <p class="task-description">
-                        ${escapeHtml(
-                            task.description || ""
-                        )}
-                    </p>
-
-
-                    <div class="task-meta">
-
-                        <span>
-                            📁
-                            ${escapeHtml(
-                                task.category ||
-                                "عمومی"
-                            )}
-                        </span>
-
-
-                        <span>
-                            ⚡
-                            ${escapeHtml(
-                                task.priority ||
-                                "معمولی"
-                            )}
-                        </span>
-
-
-                        <span>
-                            📅
-                            ${
-                                task.due_date
-                                ? escapeHtml(
-                                    task.due_date
-                                )
-                                : "بدون سررسید"
-                            }
-                        </span>
-
-
-                        <span>
-                            🔔
-                            ${
-                                task.reminder_at
-                                ? formatReminder(
-                                    task.reminder_at
-                                )
-                                : "بدون یادآوری"
-                            }
-                        </span>
-
-                    </div>
-
-
-                    <div class="task-actions">
-
-                        <button
-                            type="button"
-                            class="status-task-button"
-                        >
-                            تغییر وضعیت
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="edit-task-button"
-                        >
-                            ویرایش
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="delete-task-button"
-                        >
-                            حذف
-                        </button>
-
-                    </div>
+                    <span class="status-badge ${getStatusClass(task.status)}">
+                        ${escapeHtml(task.status)}
+                    </span>
 
                 </div>
 
-            `;
+                <p class="task-description">
+                    ${escapeHtml(task.description || "")}
+                </p>
 
+                <div class="task-meta">
 
-            card
-                .querySelector(
-                    ".status-task-button"
+                    <span>
+                        📁 ${escapeHtml(task.category || "عمومی")}
+                    </span>
+
+                    <span>
+                        ⚡ ${escapeHtml(task.priority || "معمولی")}
+                    </span>
+
+                    <span>
+                        📅 ${
+                            task.due_date
+                                ? escapeHtml(task.due_date)
+                                : "بدون سررسید"
+                        }
+                    </span>
+
+                    <span>
+                        🔔 ${
+                            task.reminder_at
+                                ? formatReminder(task.reminder_at)
+                                : "بدون یادآوری"
+                        }
+                    </span>
+
+                </div>
+
+                <div class="task-actions">
+
+                    <button
+                        type="button"
+                        class="status-task-button"
+                    >
+                        تغییر وضعیت
+                    </button>
+
+                    <button
+                        type="button"
+                        class="edit-task-button"
+                    >
+                        ویرایش
+                    </button>
+
+                    <button
+                        type="button"
+                        class="delete-task-button"
+                    >
+                        حذف
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+        card
+            .querySelector(".status-task-button")
+            .addEventListener(
+                "click",
+                () => changeTaskStatus(
+                    task.id,
+                    task.status
                 )
-                .addEventListener(
-                    "click",
-                    () =>
-                        changeTaskStatus(
-                            task.id,
-                            task.status
-                        )
-                );
-
-
-            card
-                .querySelector(
-                    ".edit-task-button"
-                )
-                .addEventListener(
-                    "click",
-                    () =>
-                        openEditModal(
-                            task.id
-                        )
-                );
-
-
-            card
-                .querySelector(
-                    ".delete-task-button"
-                )
-                .addEventListener(
-                    "click",
-                    () =>
-                        deleteTask(
-                            task.id
-                        )
-                );
-
-
-            list.appendChild(
-                card
             );
 
-        }
-    );
+        card
+            .querySelector(".edit-task-button")
+            .addEventListener(
+                "click",
+                () => openEditModal(task.id)
+            );
+
+        card
+            .querySelector(".delete-task-button")
+            .addEventListener(
+                "click",
+                () => deleteTask(task.id)
+            );
+
+        list.appendChild(card);
+    });
 }
 
 
-// =========================================================
-// STATUS CLASS
-// =========================================================
+function getStatusClass(status) {
 
-function getStatusClass(
-    status
-) {
-
-    if (
-        status ===
-        "انجام شده"
-    ) {
-
+    if (status === "انجام شده") {
         return "status-completed";
     }
 
-
-    if (
-        status ===
-        "در حال انجام"
-    ) {
-
+    if (status === "در حال انجام") {
         return "status-progress";
     }
-
 
     return "status-pending";
 }
 
 
-// =========================================================
+// =========================
 // DASHBOARD
-// =========================================================
+// =========================
 
-function updateDashboard(
-    tasks
-) {
+function updateDashboard(tasks) {
 
-    const total =
-        tasks.length;
+    $("totalTasks").textContent = tasks.length;
 
-
-    const progress =
+    $("inProgressTasks").textContent =
         tasks.filter(
-            task =>
-                task.status ===
-                "در حال انجام"
+            task => task.status === "در حال انجام"
         ).length;
 
-
-    const completed =
+    $("completedTasks").textContent =
         tasks.filter(
-            task =>
-                task.status ===
-                "انجام شده"
+            task => task.status === "انجام شده"
         ).length;
 
-
-    const reminders =
-        getUpcomingReminders(
-            tasks
-        ).length;
-
-
-    if ($("totalTasks")) {
-
-        $("totalTasks")
-            .textContent =
-            total;
-    }
-
-
-    if ($("inProgressTasks")) {
-
-        $("inProgressTasks")
-            .textContent =
-            progress;
-    }
-
-
-    if ($("completedTasks")) {
-
-        $("completedTasks")
-            .textContent =
-            completed;
-    }
-
-
-    if ($("reminderTasks")) {
-
-        $("reminderTasks")
-            .textContent =
-            reminders;
-    }
+    $("reminderTasks").textContent =
+        getUpcomingReminders(tasks).length;
 }
 
 
-// =========================================================
-// FORM SUBMIT
-// =========================================================
+// =========================
+// FORM
+// =========================
 
-async function handleTaskSubmit(
-    event
-) {
+async function handleTaskSubmit(event) {
 
     event.preventDefault();
 
-
-    const title =
-        $("title")
-            ?.value
-            .trim();
-
+    const title = $("title")?.value.trim();
 
     if (!title) {
-
-        alert(
-            "عنوان Task را وارد کن."
-        );
-
+        alert("عنوان Task را وارد کن.");
         return;
     }
 
-
-    const result =
-        $("categoryResult");
-
+    const result = $("categoryResult");
 
     let category =
         result?.dataset.category;
 
+    if (editingTaskId !== null) {
 
-    // -----------------------------------------------------
-    // EDIT
-    // -----------------------------------------------------
-
-    if (
-        editingTaskId !== null
-    ) {
-
-        const oldTask =
-            allTasks.find(
-                task =>
-                    Number(task.id) ===
-                    Number(editingTaskId)
-            );
-
+        const oldTask = allTasks.find(
+            task =>
+                Number(task.id) ===
+                Number(editingTaskId)
+        );
 
         category =
             category ||
             oldTask?.category ||
             "تعیین نشده";
 
-
         await updateTask(
             editingTaskId,
             category
         );
 
-
         return;
     }
 
-
-    // -----------------------------------------------------
-    // CREATE
-    // -----------------------------------------------------
-
-    category =
-        category ||
-        "تعیین نشده";
-
-
     await createTask(
-        category
+        category || "تعیین نشده"
     );
 }
 
 
-// =========================================================
-// CREATE TASK
-// =========================================================
+// =========================
+// CREATE
+// =========================
 
-async function createTask(
-    category
-) {
+function getTaskFormData(category) {
 
-    const data = {
-
+    return {
         title:
-            $("title")
-                ?.value
-                .trim()
-            || "",
-
+            $("title")?.value.trim() || "",
 
         description:
-            $("description")
-                ?.value
-                .trim()
-            || "",
-
+            $("description")?.value.trim() || "",
 
         priority:
-            $("priority")
-                ?.value
-            || "معمولی",
+            $("priority")?.value || "معمولی",
 
-
-        category:
-            category,
-
+        category,
 
         due_date:
-            $("dueDate")
-                ?.value
-            || null,
-
+            $("dueDate")?.value || null,
 
         reminder_at:
-            $("reminderAt")
-                ?.value
-            || null
+            $("reminderAt")?.value || null
     };
+}
 
+
+async function createTask(category) {
 
     try {
 
-        const response =
-            await fetch(
-                "/api/tasks",
-                {
+        const response = await fetch(
+            "/api/tasks",
+            {
+                method: "POST",
 
-                    method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                body: JSON.stringify(
+                    getTaskFormData(category)
+                )
+            }
+        );
 
-                    body:
-                        JSON.stringify(data)
-
-                }
-            );
-
-
-        const responseData =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
-                responseData.error ||
-                "ثبت Task انجام نشد."
+                data.error || "ثبت Task انجام نشد."
             );
         }
 
-
-        resetTaskForm();
-
-
         closeTaskModal();
-
 
         await loadTasks();
 
-
     } catch (error) {
 
-        console.error(
-            "Create task error:",
-            error
-        );
+        console.error("Create task error:", error);
 
-
-        alert(
-            "خطا: " +
-            error.message
-        );
+        alert("خطا: " + error.message);
     }
 }
 
 
-// =========================================================
-// UPDATE TASK
-// =========================================================
+// =========================
+// UPDATE
+// =========================
 
-async function updateTask(
-    taskId,
-    category
-) {
-
-    const data = {
-
-        task_id:
-            taskId,
-
-
-        title:
-            $("title")
-                ?.value
-                .trim()
-            || "",
-
-
-        description:
-            $("description")
-                ?.value
-                .trim()
-            || "",
-
-
-        priority:
-            $("priority")
-                ?.value
-            || "معمولی",
-
-
-        category:
-            category,
-
-
-        due_date:
-            $("dueDate")
-                ?.value
-            || null,
-
-
-        reminder_at:
-            $("reminderAt")
-                ?.value
-            || null
-    };
-
+async function updateTask(taskId, category) {
 
     try {
 
-        const response =
-            await fetch(
-                "/api/tasks/update",
-                {
+        const data = {
+            task_id: taskId,
+            ...getTaskFormData(category)
+        };
 
-                    method: "POST",
+        const response = await fetch(
+            "/api/tasks/update",
+            {
+                method: "POST",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    body:
-                        JSON.stringify(data)
-
-                }
-            );
-
+                body: JSON.stringify(data)
+            }
+        );
 
         const responseData =
             await response.json();
 
-
         if (!response.ok) {
-
             throw new Error(
                 responseData.error ||
                 "ویرایش انجام نشد."
             );
         }
 
-
-        alert(
-            "Task با موفقیت ویرایش شد."
-        );
-
-
         closeTaskModal();
-
 
         await loadTasks();
 
-
     } catch (error) {
 
-        console.error(
-            "Update task error:",
-            error
-        );
+        console.error("Update task error:", error);
 
-
-        alert(
-            "خطا: " +
-            error.message
-        );
+        alert("خطا: " + error.message);
     }
 }
 
 
-// =========================================================
+// =========================
 // AI
-// =========================================================
+// =========================
 
 async function predictCategory() {
 
     const title =
-        $("title")
-            ?.value
-            .trim();
-
+        $("title")?.value.trim();
 
     if (!title) {
 
@@ -2147,103 +1188,64 @@ async function predictCategory() {
         return;
     }
 
-
-    showCategoryMessage(
-        "در حال پیش‌بینی..."
-    );
-
+    showCategoryMessage("در حال پیش‌بینی...");
 
     try {
 
-        const response =
-            await fetch(
-                "/api/predict",
-                {
+        const response = await fetch(
+            "/api/predict",
+            {
+                method: "POST",
 
-                    method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                body: JSON.stringify({ title })
+            }
+        );
 
-                    body:
-                        JSON.stringify({
-                            title:
-                                title
-                        })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
-                data.error ||
-                "پیش‌بینی انجام نشد."
+                data.error || "پیش‌بینی انجام نشد."
             );
         }
 
+        const result = $("categoryResult");
 
-        const result =
-            $("categoryResult");
+        result.dataset.category =
+            data.category;
 
+        result.textContent =
+            `دسته‌بندی پیشنهادی: ${data.category}`;
 
-        if (result) {
-
-            result.dataset.category =
-                data.category;
-
-
-            result.textContent =
-                `دسته‌بندی پیشنهادی: ${data.category}`;
-
-
-            result.classList.remove(
-                "hidden"
-            );
-        }
-
+        result.classList.remove("hidden");
 
     } catch (error) {
 
         showCategoryMessage(
-            "خطا: " +
-            error.message
+            "خطا: " + error.message
         );
     }
 }
 
 
-function showCategoryMessage(
-    message
-) {
+function showCategoryMessage(message) {
 
-    const result =
-        $("categoryResult");
-
+    const result = $("categoryResult");
 
     if (!result) return;
 
-
-    result.textContent =
-        message;
-
-
-    result.classList.remove(
-        "hidden"
-    );
+    result.textContent = message;
+    result.classList.remove("hidden");
 }
 
 
-// =========================================================
-// CHANGE STATUS
-// =========================================================
+// =========================
+// STATUS
+// =========================
 
 async function changeTaskStatus(
     taskId,
@@ -2251,338 +1253,212 @@ async function changeTaskStatus(
 ) {
 
     const currentIndex =
-        options.statuses.indexOf(
-            currentStatus
-        );
+        options.statuses.indexOf(currentStatus);
 
+    let nextIndex = currentIndex + 1;
 
-    let nextIndex =
-        currentIndex + 1;
-
-
-    if (
-        nextIndex >=
-        options.statuses.length
-    ) {
-
+    if (nextIndex >= options.statuses.length) {
         nextIndex = 0;
     }
 
-
     const nextStatus =
-        options.statuses[
-            nextIndex
-        ];
-
+        options.statuses[nextIndex];
 
     try {
 
-        const response =
-            await fetch(
-                "/api/tasks/status",
-                {
+        const response = await fetch(
+            "/api/tasks/status",
+            {
+                method: "POST",
 
-                    method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    status: nextStatus
+                })
+            }
+        );
 
-                    body:
-                        JSON.stringify({
-
-                            task_id:
-                                taskId,
-
-                            status:
-                                nextStatus
-
-                        })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
                 data.error ||
                 "تغییر وضعیت انجام نشد."
             );
         }
 
-
         await loadTasks();
-
 
     } catch (error) {
 
-        alert(
-            "خطا: " +
-            error.message
-        );
+        alert("خطا: " + error.message);
     }
 }
 
 
-// =========================================================
+// =========================
 // DELETE
-// =========================================================
+// =========================
 
-async function deleteTask(
-    taskId
-) {
+async function deleteTask(taskId) {
 
     if (
         !confirm(
             "آیا مطمئنی می‌خواهی این Task را حذف کنی؟"
         )
     ) {
-
         return;
     }
 
-
     try {
 
-        const response =
-            await fetch(
-                "/api/tasks/delete",
-                {
+        const response = await fetch(
+            "/api/tasks/delete",
+            {
+                method: "POST",
 
-                    method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                body: JSON.stringify({
+                    task_id: taskId
+                })
+            }
+        );
 
-                    body:
-                        JSON.stringify({
-                            task_id:
-                                taskId
-                        })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
                 data.error ||
                 "حذف Task انجام نشد."
             );
         }
 
-
         await loadTasks();
-
 
     } catch (error) {
 
-        console.error(
-            "Delete error:",
-            error
-        );
+        console.error("Delete error:", error);
 
-
-        alert(
-            "خطا: " +
-            error.message
-        );
+        alert("خطا: " + error.message);
     }
 }
 
 
-// =========================================================
+// =========================
 // FILTERS
-// =========================================================
+// =========================
 
 function applyFilters() {
 
     const search =
-        $("taskSearch")
-            ?.value
+        $("taskSearch")?.value
             .trim()
-            .toLowerCase()
-        || "";
-
+            .toLowerCase() || "";
 
     const category =
-        $("categoryFilter")
-            ?.value
-        || "";
-
+        $("categoryFilter")?.value || "";
 
     const priority =
-        $("priorityFilter")
-            ?.value
-        || "";
-
+        $("priorityFilter")?.value || "";
 
     const status =
-        $("statusFilter")
-            ?.value
-        || "";
-
+        $("statusFilter")?.value || "";
 
     const dueDate =
-        $("dueDateFilter")
-            ?.value
-        || "";
+        $("dueDateFilter")?.value || "";
 
 
-    const filtered =
-        allTasks.filter(
-            task => {
+    const filtered = allTasks.filter(task => {
 
-                const text = `
-                    ${task.title || ""}
-                    ${task.description || ""}
-                    ${task.category || ""}
-                `.toLowerCase();
+        const text = [
+            task.title,
+            task.description,
+            task.category
+        ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
 
+        if (search && !text.includes(search)) {
+            return false;
+        }
 
-                if (
-                    search &&
-                    !text.includes(
-                        search
-                    )
-                ) {
+        if (
+            category &&
+            task.category !== category
+        ) {
+            return false;
+        }
 
-                    return false;
-                }
+        if (
+            priority &&
+            task.priority !== priority
+        ) {
+            return false;
+        }
 
+        if (
+            status &&
+            task.status !== status
+        ) {
+            return false;
+        }
 
-                if (
-                    category &&
-                    task.category !==
-                    category
-                ) {
+        if (
+            dueDate &&
+            !checkDueDate(
+                task.due_date,
+                dueDate
+            )
+        ) {
+            return false;
+        }
 
-                    return false;
-                }
+        return true;
+    });
 
-
-                if (
-                    priority &&
-                    task.priority !==
-                    priority
-                ) {
-
-                    return false;
-                }
-
-
-                if (
-                    status &&
-                    task.status !==
-                    status
-                ) {
-
-                    return false;
-                }
-
-
-                if (
-                    dueDate &&
-                    !checkDueDate(
-                        task.due_date,
-                        dueDate
-                    )
-                ) {
-
-                    return false;
-                }
-
-
-                return true;
-            }
-        );
-
-
-    renderTasks(
-        filtered
-    );
-
-
-    updateDashboard(
-        filtered
-    );
-
-
-    renderReminders(
-        filtered
-    );
+    renderTasks(filtered);
+    updateDashboard(filtered);
+    renderReminders(filtered);
 }
 
 
 function resetFilters() {
 
-    if ($("taskSearch")) {
+    [
+        "taskSearch",
+        "categoryFilter",
+        "priorityFilter",
+        "statusFilter",
+        "dueDateFilter"
+    ].forEach(id => {
 
-        $("taskSearch")
-            .value = "";
-    }
+        if ($(id)) {
+            $(id).value = "";
+        }
 
-
-    if ($("categoryFilter")) {
-
-        $("categoryFilter")
-            .value = "";
-    }
-
-
-    if ($("priorityFilter")) {
-
-        $("priorityFilter")
-            .value = "";
-    }
-
-
-    if ($("statusFilter")) {
-
-        $("statusFilter")
-            .value = "";
-    }
-
-
-    if ($("dueDateFilter")) {
-
-        $("dueDateFilter")
-            .value = "";
-    }
+    });
 }
 
 
-// =========================================================
+// =========================
 // DUE DATE
-// =========================================================
+// =========================
 
-function checkDueDate(
-    value,
-    filter
-) {
+function checkDueDate(value, filter) {
 
     if (!value) {
-
         return filter === "none";
     }
 
-
-    const today =
-        new Date();
-
+    const today = new Date();
 
     today.setHours(
         0,
@@ -2591,207 +1467,111 @@ function checkDueDate(
         0
     );
 
+    const date = new Date(
+        `${value}T00:00:00`
+    );
 
-    const date =
-        new Date(
-            `${value}T00:00:00`
-        );
-
-
-    if (
-        filter === "today"
-    ) {
-
-        return (
-            date.getTime() ===
-            today.getTime()
-        );
+    if (filter === "today") {
+        return date.getTime() === today.getTime();
     }
 
-
-    if (
-        filter === "upcoming"
-    ) {
-
+    if (filter === "upcoming") {
         return date > today;
     }
 
-
-    if (
-        filter === "none"
-    ) {
-
-        return false;
-    }
-
-
-    return true;
+    return filter !== "none";
 }
 
 
-// =========================================================
+// =========================
 // REMINDERS
-// =========================================================
+// =========================
 
-function getUpcomingReminders(
-    tasks
-) {
+function getUpcomingReminders(tasks) {
 
-    const now =
-        new Date();
+    const now = new Date();
 
-
-    const limit =
-        new Date(
-            now.getTime() +
-            24 *
-            60 *
-            60 *
-            1000
-        );
-
-
-    return tasks.filter(
-        task => {
-
-            if (
-                !task.reminder_at
-            ) {
-
-                return false;
-            }
-
-
-            if (
-                task.status ===
-                "انجام شده"
-            ) {
-
-                return false;
-            }
-
-
-            const reminder =
-                parseReminderDate(
-                    task.reminder_at
-                );
-
-
-            return (
-                reminder &&
-                reminder >= now &&
-                reminder <= limit
-            );
-        }
+    const limit = new Date(
+        now.getTime() +
+        24 * 60 * 60 * 1000
     );
+
+    return tasks.filter(task => {
+
+        if (!task.reminder_at) {
+            return false;
+        }
+
+        if (task.status === "انجام شده") {
+            return false;
+        }
+
+        const reminder =
+            parseReminderDate(
+                task.reminder_at
+            );
+
+        return (
+            reminder &&
+            reminder >= now &&
+            reminder <= limit
+        );
+    });
 }
 
 
-function parseReminderDate(
-    value
-) {
+function parseReminderDate(value) {
 
     if (!value) return null;
 
+    const normalized =
+        String(value).replace(" ", "T");
 
-    let normalized =
-        String(value)
-            .replace(
-                " ",
-                "T"
-            );
-
-
-    if (
-        !normalized.includes(
-            "T"
-        )
-    ) {
-
+    if (!normalized.includes("T")) {
         return null;
     }
-
 
     const date =
-        new Date(
-            normalized
-        );
+        new Date(normalized);
 
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return null;
-    }
-
-
-    return date;
+    return Number.isNaN(date.getTime())
+        ? null
+        : date;
 }
 
 
-function convertReminderForInput(
-    value
-) {
+function convertReminderForInput(value) {
 
     if (!value) return "";
 
+    const normalized =
+        String(value).replace(" ", "T");
 
-    let normalized =
-        String(value)
-            .replace(
-                " ",
-                "T"
-            );
-
-
-    if (
-        normalized.length >= 16
-    ) {
-
-        return normalized.substring(
-            0,
-            16
-        );
-    }
-
-
-    return normalized;
+    return normalized.length >= 16
+        ? normalized.substring(0, 16)
+        : normalized;
 }
 
 
-// =========================================================
+// =========================
 // RENDER REMINDERS
-// =========================================================
+// =========================
 
-function renderReminders(
-    tasks
-) {
+function renderReminders(tasks) {
 
-    const list =
-        $("reminderList");
-
+    const list = $("reminderList");
 
     if (!list) return;
 
-
     const reminders =
-        getUpcomingReminders(
-            tasks
-        );
-
+        getUpcomingReminders(tasks);
 
     if (!reminders.length) {
 
         list.innerHTML = `
-
             <div class="no-reminders">
 
-                <span>
-                    🔕
-                </span>
+                <span>🔕</span>
 
                 <p>
                     در ۲۴ ساعت آینده
@@ -2799,114 +1579,72 @@ function renderReminders(
                 </p>
 
             </div>
-
         `;
 
         return;
     }
 
-
     list.innerHTML = "";
-
 
     reminders
         .sort(
-            (a, b) => {
-
-                return (
-                    parseReminderDate(
-                        a.reminder_at
-                    ) -
-                    parseReminderDate(
-                        b.reminder_at
-                    )
-                );
-
-            }
+            (a, b) =>
+                parseReminderDate(a.reminder_at) -
+                parseReminderDate(b.reminder_at)
         )
-        .forEach(
-            task => {
+        .forEach(task => {
 
-                const item =
-                    document.createElement(
-                        "div"
-                    );
+            const item =
+                document.createElement("div");
 
+            item.className =
+                "reminder-card";
 
-                item.className =
-                    "reminder-card";
+            item.innerHTML = `
+                <div class="reminder-icon">
+                    🔔
+                </div>
 
+                <div class="reminder-info">
 
-                item.innerHTML = `
+                    <strong>
+                        ${escapeHtml(task.title)}
+                    </strong>
 
-                    <div class="reminder-icon">
-                        🔔
-                    </div>
+                    <span>
+                        ${formatReminder(task.reminder_at)}
+                    </span>
 
-                    <div class="reminder-info">
+                </div>
+            `;
 
-                        <strong>
-                            ${escapeHtml(
-                                task.title
-                            )}
-                        </strong>
-
-                        <span>
-                            ${formatReminder(
-                                task.reminder_at
-                            )}
-                        </span>
-
-                    </div>
-
-                `;
-
-
-                list.appendChild(
-                    item
-                );
-
-            }
-        );
+            list.appendChild(item);
+        });
 }
 
 
-// =========================================================
-// FORMAT REMINDER
-// =========================================================
+// =========================
+// FORMAT DATE
+// =========================
 
-function formatReminder(
-    value
-) {
+function formatReminder(value) {
 
     if (!value) {
-
         return "بدون یادآوری";
     }
 
-
     const date =
-        parseReminderDate(
-            value
-        );
-
+        parseReminderDate(value);
 
     if (!date) {
-
         return value;
     }
-
 
     return date.toLocaleString(
         "fa-IR",
         {
-
-            dateStyle:
-                "short",
-
-            timeStyle:
-                "short"
-
+            dateStyle: "short",
+            timeStyle: "short"
         }
     );
 }
