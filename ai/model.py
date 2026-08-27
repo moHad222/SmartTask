@@ -29,20 +29,16 @@ def load_model():
 
     if _model is None or _vectorizer is None:
 
-        if not MODEL_PATH.exists():
-            raise FileNotFoundError(
-                f"فایل مدل پیدا نشد: {MODEL_PATH}"
-            )
-
-        if not VECTORIZER_PATH.exists():
-            raise FileNotFoundError(
-                f"فایل Vectorizer پیدا نشد: {VECTORIZER_PATH}"
-            )
-
         _model = joblib.load(MODEL_PATH)
         _vectorizer = joblib.load(VECTORIZER_PATH)
 
+        # سازگاری LogisticRegression
+        # با نسخه‌های جدید scikit-learn
+        if hasattr(_model, "solver"):
 
+            if not hasattr(_model, "multi_class"):
+
+                _model.multi_class = "auto"
 # =========================================================
 # NORMALIZE
 # =========================================================
