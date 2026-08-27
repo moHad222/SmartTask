@@ -61,9 +61,10 @@ def send_json(
 ):
 
     response = json.dumps(
-        data,
-        ensure_ascii=False
-    ).encode("utf-8")
+    data,
+    ensure_ascii=False,
+    default=str
+).encode("utf-8")
 
     handler.send_response(status)
 
