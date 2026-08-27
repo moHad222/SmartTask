@@ -1,8 +1,9 @@
 {
-  "app": "smarttaskqiau",
-  "port": 8000,
-  "build": {
+    "platform": "python",
+    "app": "smarttaskqiau",
+    "port": 8000,
+    "build": {
     "location": "iran"
-  },
-  "disks": []
+    },
+    "disks": []
 }
