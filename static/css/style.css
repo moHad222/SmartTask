@@ -1292,3 +1292,316 @@ select:focus {
         flex-direction: column;
     }
 }
+
+/* =========================
+   JALALI DATE PICKER
+========================= */
+
+.date-picker-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.date-input-display {
+    width: 100%;
+    height: 44px;
+
+    padding: 0 12px;
+
+    border: 1px solid #d9cdbd;
+    border-radius: 10px;
+
+    background: #fffefa;
+    color: var(--text);
+
+    font-family: inherit;
+    font-size: 13px;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.date-input-display:hover {
+    border-color: #c8b9a7;
+}
+
+.date-input-display.active {
+    border-color: var(--olive);
+
+    box-shadow:
+        0 0 0 3px rgba(104, 115, 75, 0.1);
+}
+
+.date-input-placeholder {
+    color: #a18f81;
+}
+
+.date-input-value {
+    color: var(--text);
+}
+
+.date-input-icon {
+    color: var(--brown-light);
+    font-size: 17px;
+}
+
+
+/* Calendar */
+
+.jalali-calendar {
+    position: absolute;
+
+    top: calc(100% + 8px);
+    right: 0;
+
+    width: 315px;
+
+    background: var(--cream-card);
+
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    padding: 14px;
+
+    box-shadow:
+        0 18px 45px rgba(65, 52, 40, 0.14);
+
+    z-index: 1100;
+
+    display: none;
+
+    animation: calendarIn 0.16s ease;
+}
+
+.jalali-calendar.active {
+    display: block;
+}
+
+@keyframes calendarIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Calendar Header */
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+}
+
+.calendar-month-year {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 2px;
+}
+
+.calendar-month {
+    color: var(--brown-dark);
+
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.calendar-year {
+    color: var(--muted);
+
+    font-size: 10px;
+}
+
+.calendar-nav {
+    width: 32px;
+    height: 32px;
+
+    border-radius: 9px;
+
+    background: #f1ebe2;
+    color: var(--brown);
+
+    font-size: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition: 0.15s ease;
+}
+
+.calendar-nav:hover {
+    background: var(--olive-light);
+    color: var(--olive-dark);
+}
+
+
+/* Weekdays */
+
+.calendar-weekdays {
+    display: grid;
+
+    grid-template-columns: repeat(7, 1fr);
+
+    gap: 3px;
+
+    margin-bottom: 5px;
+}
+
+.calendar-weekday {
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--muted);
+
+    font-size: 10px;
+    font-weight: bold;
+
+    cursor: default;
+}
+
+
+/* Days */
+
+.calendar-days {
+    display: grid;
+
+    grid-template-columns: repeat(7, 1fr);
+
+    gap: 3px;
+}
+
+.calendar-day {
+    height: 36px;
+
+    border-radius: 9px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--text);
+
+    font-size: 11px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.calendar-day:hover {
+    background: var(--olive-light);
+    color: var(--olive-dark);
+}
+
+.calendar-day.other-month {
+    color: #c8bdb0;
+}
+
+.calendar-day.today {
+    border: 1px solid var(--olive);
+
+    color: var(--olive-dark);
+    font-weight: bold;
+}
+
+.calendar-day.selected {
+    background: var(--olive);
+    color: white;
+
+    font-weight: bold;
+}
+
+.calendar-day.today.selected {
+    border-color: var(--olive-dark);
+}
+
+
+/* Calendar Footer */
+
+.calendar-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 12px;
+    padding-top: 10px;
+
+    border-top: 1px solid var(--border);
+}
+
+.calendar-today-button {
+    background: transparent;
+
+    color: var(--olive-dark);
+
+    font-family: inherit;
+    font-size: 11px;
+
+    cursor: pointer;
+
+    padding: 5px 7px;
+
+    border-radius: 7px;
+}
+
+.calendar-today-button:hover {
+    background: var(--olive-light);
+}
+
+.calendar-clear-button {
+    background: transparent;
+
+    color: var(--danger);
+
+    font-family: inherit;
+    font-size: 11px;
+
+    cursor: pointer;
+
+    padding: 5px 7px;
+
+    border-radius: 7px;
+}
+
+.calendar-clear-button:hover {
+    background: var(--danger-light);
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .jalali-calendar {
+        width: 100%;
+        min-width: 280px;
+    }
+
+    .calendar-day {
+        height: 38px;
+    }
+}

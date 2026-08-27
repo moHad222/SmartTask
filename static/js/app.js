@@ -1001,7 +1001,9 @@ function resetTaskForm() {
         "reminderDateValue"
     );
 
-    $("reminderTime").value = "";
+    if ($("reminderTime")) {
+        $("reminderTime").value = "";
+    }
 
     const result =
         $("categoryResult");
@@ -1099,13 +1101,11 @@ function renderTasks(tasks) {
 
                 </div>
 
-
                 <p class="task-description">
                     ${escapeHtml(
                         task.description || ""
                     )}
                 </p>
-
 
                 <div class="task-meta">
 
@@ -1146,7 +1146,6 @@ function renderTasks(tasks) {
                     </span>
 
                 </div>
-
 
                 <div class="task-actions">
 
@@ -1298,7 +1297,6 @@ async function handleTaskSubmit(event) {
         return;
     }
 
-
     const result =
         $("categoryResult");
 
@@ -1337,29 +1335,6 @@ async function handleTaskSubmit(event) {
 
 function getTaskFormData(category) {
 
-    const dueDate =
-        $("dueDateValue")?.value || null;
-
-    const reminderDate =
-        $("reminderDateValue")?.value || "";
-
-    const reminderTime =
-        $("reminderTime")?.value || "";
-
-
-    let reminderAt = null;
-
-
-    if (
-        reminderDate &&
-        reminderTime
-    ) {
-
-        reminderAt =
-            `${reminderDate}T${reminderTime}`;
-    }
-
-
     return {
 
         title:
@@ -1375,10 +1350,10 @@ function getTaskFormData(category) {
         category,
 
         due_date:
-            dueDate,
+            $("dueDateValue")?.value || null,
 
         reminder_at:
-            reminderAt
+            getReminderValue()
     };
 }
 
@@ -2416,8 +2391,57 @@ function renderReminders(tasks) {
 
 
 /* =========================================================
-   PERSIAN DATE CONVERSION
-   بدون کتابخانه
+   JALALI CALENDAR
+   Accurate conversion without external packages
+========================================================= */
+
+const JALALI_MONTH_NAMES = [
+    "فروردین",
+    "اردیبهشت",
+    "خرداد",
+    "تیر",
+    "مرداد",
+    "شهریور",
+    "مهر",
+    "آبان",
+    "آذر",
+    "دی",
+    "بهمن",
+    "اسفند"
+];
+
+
+const JALALI_WEEKDAYS = [
+    "شنبه",
+    "یکشنبه",
+    "دوشنبه",
+    "سه‌شنبه",
+    "چهارشنبه",
+    "پنجشنبه",
+    "جمعه"
+];
+
+
+let datePickerState = {
+    pickerId: null,
+    inputId: null,
+    valueId: null,
+    year: null,
+    month: null
+};
+
+
+/*
+ * الگوریتم استاندارد تبدیل جلالی/میلادی.
+ *
+ * نکته:
+ * هیچ تبدیل تقریبی مثل «سال + 621 و 21 مارس»
+ * در اینجا استفاده نشده است.
+ */
+
+
+/* =========================================================
+   GREGORIAN -> JALALI
 ========================================================= */
 
 function gregorianToJalali(
@@ -2426,50 +2450,28 @@ function gregorianToJalali(
     gd
 ) {
 
-    const gDaysInMonth = [
+    const gdm = [
+        0,
         31,
-        28,
-        31,
-        30,
-        31,
-        30,
-        31,
-        31,
-        30,
-        31,
-        30,
-        31
-    ];
-
-
-    const jDaysInMonth = [
-        31,
-        31,
-        31,
-        31,
-        31,
-        31,
-        30,
-        30,
-        30,
-        30,
-        30,
-        29
+        59,
+        90,
+        120,
+        151,
+        181,
+        212,
+        243,
+        273,
+        304,
+        334
     ];
 
 
     let gy2 =
-        gy - 1600;
-
-    let gm2 =
-        gm - 1;
-
-    let gd2 =
-        gd - 1;
+        gy + 1;
 
 
-    let gDayNo =
-        365 * gy2 +
+    let days =
+        365 * gy +
         Math.floor(
             (gy2 + 3) / 4
         ) -
@@ -2478,104 +2480,92 @@ function gregorianToJalali(
         ) +
         Math.floor(
             (gy2 + 399) / 400
-        );
-
-
-    for (
-        let i = 0;
-        i < gm2;
-        i++
-    ) {
-
-        gDayNo +=
-            gDaysInMonth[i];
-    }
+        ) -
+        80 +
+        gd +
+        gdm[gm - 1];
 
 
     if (
-        gm2 > 1 &&
+        gm > 2 &&
         (
             gy % 4 === 0 &&
-            gy % 100 !== 0
-            ||
-            gy % 400 === 0
+            (
+                gy % 100 !== 0 ||
+                gy % 400 === 0
+            )
         )
     ) {
 
-        gDayNo++;
+        days++;
     }
-
-
-    gDayNo += gd2;
-
-
-    let jDayNo =
-        gDayNo - 79;
-
-
-    const jNp =
-        Math.floor(
-            jDayNo / 12053
-        );
-
-
-    jDayNo %=
-        12053;
 
 
     let jy =
         979 +
-        33 * jNp +
-        4 *
+        33 *
         Math.floor(
-            jDayNo / 1461
+            days / 12053
         );
 
 
-    jDayNo %=
-        1461;
+    days %= 12053;
 
 
-    if (
-        jDayNo >= 366
-    ) {
+    jy +=
+        4 *
+        Math.floor(
+            days / 1461
+        );
+
+
+    days %= 1461;
+
+
+    if (days > 365) {
 
         jy +=
             Math.floor(
-                (jDayNo - 1) / 365
+                (days - 1) / 365
             );
 
-        jDayNo =
-            (jDayNo - 1) % 365;
+        days =
+            (days - 1) % 365;
     }
 
 
-    let jm = 0;
-
-    for (
-        ;
-        jm < 11 &&
-        jDayNo >=
-            jDaysInMonth[jm];
-        jm++
-    ) {
-
-        jDayNo -=
-            jDaysInMonth[jm];
-    }
+    const jm =
+        days < 186
+            ? 1 +
+              Math.floor(
+                  days / 31
+              )
+            : 7 +
+              Math.floor(
+                  (days - 186) / 30
+              );
 
 
     const jd =
-        jDayNo + 1;
+        1 +
+        (
+            days < 186
+                ? days % 31
+                : (days - 186) % 30
+        );
 
 
     return {
         year: jy,
-        month: jm + 1,
+        month: jm,
         day: jd
     };
 }
 
+
+/* =========================================================
+   JALALI -> GREGORIAN
+========================================================= */
 
 function jalaliToGregorian(
     jy,
@@ -2583,186 +2573,18 @@ function jalaliToGregorian(
     jd
 ) {
 
-    const jDaysInMonth = [
-        31,
-        31,
-        31,
-        31,
-        31,
-        31,
-        30,
-        30,
-        30,
-        30,
-        30,
-        29
-    ];
+    let jy2 =
+        jy - 979;
 
-
-    let gy =
-        jy + 621;
-
-
-    let days = 0;
-
-
-    for (
-        let year = 1;
-        year < jy;
-        year++
-    ) {
-
-        days +=
-            isJalaliLeap(year)
-                ? 366
-                : 365;
-    }
-
-
-    for (
-        let month = 1;
-        month < jm;
-        month++
-    ) {
-
-        days +=
-            jDaysInMonth[month - 1];
-    }
-
-
-    days += jd - 1;
-
-
-    const base =
-        jalaliEpochToGregorian(
-            jy
-        );
-
-
-    const date =
-        new Date(
-            base.year,
-            base.month - 1,
-            base.day
-        );
-
-
-    date.setDate(
-        date.getDate() +
-        days -
-        jalaliDaysBeforeYear(
-            jy
-        )
-    );
-
-
-    return {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate()
-    };
-}
-
-
-function isJalaliLeap(year) {
-
-    const breaks = [
-        -61, 9, 38, 199, 426, 686,
-        756, 818, 1111, 1181, 1210,
-        1635, 2060, 2097, 2192, 2262,
-        2347, 2380, 2380, 2400, 2500,
-        3000
-    ];
-
-    let leap =
-        0;
-
-    let jp =
-        breaks[0];
-
-    let jump =
-        0;
-
-
-    for (
-        let i = 1;
-        i < breaks.length;
-        i++
-    ) {
-
-        jump =
-            breaks[i] - jp;
-
-        if (
-            year < breaks[i]
-        ) {
-            break;
-        }
-
-        leap +=
-            jump;
-
-        jp =
-            breaks[i];
-    }
-
-
-    let n =
-        year - jp;
-
-
-    return (
-        (
-            n % 33
-        ) === 1 ||
-        (
-            n % 33
-        ) === 5 ||
-        (
-            n % 33
-        ) === 9 ||
-        (
-            n % 33
-        ) === 13 ||
-        (
-            n % 33
-        ) === 17 ||
-        (
-            n % 33
-        ) === 22 ||
-        (
-            n % 33
-        ) === 26 ||
-        (
-            n % 33
-        ) === 30
-    );
-}
-
-
-/*
- * تبدیل دقیق‌تر با الگوریتم استاندارد جلالی
- */
-
-function jalaliToGregorianExact(
-    jy,
-    jm,
-    jd
-) {
-
-    jy -= 979;
-
-    let gy =
-        1600;
 
     let days =
-        365 * jy +
+        365 * jy2 +
         Math.floor(
-            jy / 33
+            jy2 / 33
         ) * 8 +
         Math.floor(
             (
-                jy % 33 + 3
+                jy2 % 33 + 3
             ) / 4
         );
 
@@ -2784,7 +2606,8 @@ function jalaliToGregorianExact(
         jd - 1;
 
 
-    gy +=
+    let gy =
+        1600 +
         400 *
         Math.floor(
             days / 146097
@@ -2808,6 +2631,7 @@ function jalaliToGregorianExact(
         days %=
             36524;
 
+
         if (days >= 365) {
             days++;
         }
@@ -2829,28 +2653,26 @@ function jalaliToGregorianExact(
 
         gy +=
             Math.floor(
-                (
-                    days - 1
-                ) / 365
+                (days - 1) / 365
             );
 
         days =
-            (
-                days - 1
-            ) % 365;
+            (days - 1) % 365;
     }
 
 
-    let gd =
+    const gd =
         days + 1;
 
 
     const leap =
         (
             gy % 4 === 0 &&
-            gy % 100 !== 0
-        ) ||
-        gy % 400 === 0;
+            (
+                gy % 100 !== 0 ||
+                gy % 400 === 0
+            )
+        );
 
 
     const gDays = [
@@ -2871,13 +2693,16 @@ function jalaliToGregorianExact(
 
     let gm = 1;
 
+    let remaining =
+        gd;
+
 
     while (
-        gd >
+        remaining >
         gDays[gm - 1]
     ) {
 
-        gd -=
+        remaining -=
             gDays[gm - 1];
 
         gm++;
@@ -2887,28 +2712,87 @@ function jalaliToGregorianExact(
     return {
         year: gy,
         month: gm,
-        day: gd
+        day: remaining
     };
 }
 
 
-function jalaliDaysBeforeYear(
-    year
-) {
+/* =========================================================
+   JALALI LEAP YEAR
+========================================================= */
 
-    return 0;
+function isJalaliLeap(year) {
+
+    /*
+     * همان چرخه‌ای که در تبدیل استاندارد
+     * بالا استفاده شده است.
+     */
+
+    const current =
+        jalaliToGregorian(
+            year,
+            1,
+            1
+        );
+
+    const next =
+        jalaliToGregorian(
+            year + 1,
+            1,
+            1
+        );
+
+
+    const currentDate =
+        new Date(
+            current.year,
+            current.month - 1,
+            current.day
+        );
+
+
+    const nextDate =
+        new Date(
+            next.year,
+            next.month - 1,
+            next.day
+        );
+
+
+    const difference =
+        Math.round(
+            (
+                nextDate -
+                currentDate
+            ) /
+            86400000
+        );
+
+
+    return difference === 366;
 }
 
 
-function jalaliEpochToGregorian(
-    year
+/* =========================================================
+   JALALI DAYS IN MONTH
+========================================================= */
+
+function getJalaliDaysInMonth(
+    year,
+    month
 ) {
 
-    return {
-        year: year + 621,
-        month: 3,
-        day: 21
-    };
+    if (month <= 6) {
+        return 31;
+    }
+
+    if (month <= 11) {
+        return 30;
+    }
+
+    return isJalaliLeap(year)
+        ? 30
+        : 29;
 }
 
 
@@ -3073,14 +2957,6 @@ function formatReminder(
    PERSIAN DATE PICKER
 ========================================================= */
 
-let datePickerState = {
-    target: null,
-    valueTarget: null,
-    year: null,
-    month: null
-};
-
-
 function initializeDatePickers() {
 
     $("openDueDatePicker")
@@ -3118,24 +2994,32 @@ function initializeDatePickers() {
     $("dueDate")
         ?.addEventListener(
             "click",
-            () =>
+            event => {
+
+                event.stopPropagation();
+
                 openPersianDatePicker(
                     "dueDatePicker",
                     "dueDate",
                     "dueDateValue"
-                )
+                );
+            }
         );
 
 
     $("reminderDate")
         ?.addEventListener(
             "click",
-            () =>
+            event => {
+
+                event.stopPropagation();
+
                 openPersianDatePicker(
                     "reminderDatePicker",
                     "reminderDate",
                     "reminderDateValue"
-                )
+                );
+            }
         );
 
 
@@ -3143,34 +3027,42 @@ function initializeDatePickers() {
         "click",
         event => {
 
-            const picker1 =
+            const duePicker =
                 $("dueDatePicker");
 
-            const picker2 =
+            const reminderPicker =
                 $("reminderDatePicker");
 
 
             if (
-                picker1 &&
-                !picker1.contains(event.target) &&
-                event.target !== $("dueDate") &&
-                event.target !== $("openDueDatePicker")
+                duePicker &&
+                !duePicker.contains(
+                    event.target
+                ) &&
+                event.target !==
+                    $("dueDate") &&
+                event.target !==
+                    $("openDueDatePicker")
             ) {
 
-                picker1.classList.add(
+                duePicker.classList.add(
                     "hidden"
                 );
             }
 
 
             if (
-                picker2 &&
-                !picker2.contains(event.target) &&
-                event.target !== $("reminderDate") &&
-                event.target !== $("openReminderDatePicker")
+                reminderPicker &&
+                !reminderPicker.contains(
+                    event.target
+                ) &&
+                event.target !==
+                    $("reminderDate") &&
+                event.target !==
+                    $("openReminderDatePicker")
             ) {
 
-                picker2.classList.add(
+                reminderPicker.classList.add(
                     "hidden"
                 );
             }
@@ -3178,6 +3070,10 @@ function initializeDatePickers() {
     );
 }
 
+
+/* =========================================================
+   OPEN CALENDAR
+========================================================= */
 
 function openPersianDatePicker(
     pickerId,
@@ -3194,12 +3090,12 @@ function openPersianDatePicker(
     closeDatePickers();
 
 
-    let year;
-    let month;
+    let year = null;
+    let month = null;
 
 
     const existing =
-        $(valueId)?.value;
+        $(valueId)?.value || "";
 
 
     if (existing) {
@@ -3255,8 +3151,9 @@ function openPersianDatePicker(
 
 
     datePickerState = {
-        target: inputId,
-        valueTarget: valueId,
+        pickerId,
+        inputId,
+        valueId,
         year,
         month
     };
@@ -3275,6 +3172,10 @@ function openPersianDatePicker(
 }
 
 
+/* =========================================================
+   CLOSE CALENDARS
+========================================================= */
+
 function closeDatePickers() {
 
     $("dueDatePicker")
@@ -3285,30 +3186,18 @@ function closeDatePickers() {
 }
 
 
+/* =========================================================
+   RENDER CALENDAR
+========================================================= */
+
 function renderPersianCalendar(
     picker,
     year,
     month
 ) {
 
-    const monthNames = [
-        "فروردین",
-        "اردیبهشت",
-        "خرداد",
-        "تیر",
-        "مرداد",
-        "شهریور",
-        "مهر",
-        "آبان",
-        "آذر",
-        "دی",
-        "بهمن",
-        "اسفند"
-    ];
-
-
     const firstGregorian =
-        jalaliToGregorianExact(
+        jalaliToGregorian(
             year,
             month,
             1
@@ -3323,22 +3212,71 @@ function renderPersianCalendar(
         );
 
 
+    /*
+     * JavaScript:
+     * Sunday = 0
+     * Monday = 1
+     * ...
+     * Saturday = 6
+     *
+     * تقویم فارسی از شنبه شروع می‌شود.
+     */
+
     const firstWeekDay =
-        (
-            firstDate.getDay() + 1
-        ) % 7;
+        firstDate.getDay() === 6
+            ? 0
+            : firstDate.getDay() + 1;
 
 
     const daysInMonth =
-        month <= 6
-            ? 31
-            : month <= 11
-                ? 30
-                : (
-                    isJalaliLeap(year)
-                        ? 30
-                        : 29
+        getJalaliDaysInMonth(
+            year,
+            month
+        );
+
+
+    const today =
+        new Date();
+
+
+    const todayJalali =
+        gregorianToJalali(
+            today.getFullYear(),
+            today.getMonth() + 1,
+            today.getDate()
+        );
+
+
+    const selectedValue =
+        datePickerState.valueId
+            ? $(
+                datePickerState.valueId
+              )?.value
+            : "";
+
+
+    let selectedJalali =
+        null;
+
+
+    if (selectedValue) {
+
+        const selectedDate =
+            parseDatabaseDate(
+                selectedValue
+            );
+
+
+        if (selectedDate) {
+
+            selectedJalali =
+                gregorianToJalali(
+                    selectedDate.getFullYear(),
+                    selectedDate.getMonth() + 1,
+                    selectedDate.getDate()
                 );
+        }
+    }
 
 
     let html = `
@@ -3349,19 +3287,28 @@ function renderPersianCalendar(
 
                 <button
                     type="button"
+                    class="calendar-nav-button"
                     data-calendar-prev
+                    aria-label="ماه قبل"
                 >
                     ‹
                 </button>
 
-                <strong>
-                    ${monthNames[month - 1]}
-                    ${toPersianDigits(year)}
-                </strong>
+                <div class="calendar-header-title">
+                    <strong>
+                        ${JALALI_MONTH_NAMES[month - 1]}
+                    </strong>
+
+                    <span>
+                        ${toPersianDigits(year)}
+                    </span>
+                </div>
 
                 <button
                     type="button"
+                    class="calendar-nav-button"
                     data-calendar-next
+                    aria-label="ماه بعد"
                 >
                     ›
                 </button>
@@ -3370,17 +3317,23 @@ function renderPersianCalendar(
 
 
             <div class="persian-calendar-weekdays">
+    `;
 
-                <span>شنبه</span>
-                <span>یکشنبه</span>
-                <span>دوشنبه</span>
-                <span>سه‌شنبه</span>
-                <span>چهارشنبه</span>
-                <span>پنجشنبه</span>
-                <span>جمعه</span>
 
+    JALALI_WEEKDAYS.forEach(
+        weekday => {
+
+            html += `
+                <span>
+                    ${weekday}
+                </span>
+            `;
+        }
+    );
+
+
+    html += `
             </div>
-
 
             <div class="persian-calendar-days">
     `;
@@ -3393,7 +3346,10 @@ function renderPersianCalendar(
     ) {
 
         html += `
-            <span class="calendar-empty"></span>
+            <span
+                class="calendar-empty"
+                aria-hidden="true"
+            ></span>
         `;
     }
 
@@ -3404,12 +3360,45 @@ function renderPersianCalendar(
         day++
     ) {
 
+        const isToday =
+            year === todayJalali.year &&
+            month === todayJalali.month &&
+            day === todayJalali.day;
+
+
+        const isSelected =
+            selectedJalali &&
+            year === selectedJalali.year &&
+            month === selectedJalali.month &&
+            day === selectedJalali.day;
+
+
+        const classes = [
+            "calendar-day"
+        ];
+
+
+        if (isToday) {
+            classes.push(
+                "calendar-today-date"
+            );
+        }
+
+
+        if (isSelected) {
+            classes.push(
+                "calendar-selected"
+            );
+        }
+
+
         html += `
 
             <button
                 type="button"
-                class="calendar-day"
+                class="${classes.join(" ")}"
                 data-calendar-day="${day}"
+                aria-label="${JALALI_MONTH_NAMES[month - 1]} ${day} ${year}"
             >
                 ${toPersianDigits(day)}
             </button>
@@ -3436,6 +3425,8 @@ function renderPersianCalendar(
     picker.innerHTML =
         html;
 
+
+    /* ---------- previous month ---------- */
 
     picker
         .querySelector(
@@ -3478,6 +3469,8 @@ function renderPersianCalendar(
         );
 
 
+    /* ---------- next month ---------- */
+
     picker
         .querySelector(
             "[data-calendar-next]"
@@ -3519,6 +3512,8 @@ function renderPersianCalendar(
         );
 
 
+    /* ---------- days ---------- */
+
     picker
         .querySelectorAll(
             "[data-calendar-day]"
@@ -3533,7 +3528,8 @@ function renderPersianCalendar(
 
                     const day =
                         Number(
-                            button.dataset.calendarDay
+                            button.dataset
+                                .calendarDay
                         );
 
 
@@ -3547,6 +3543,8 @@ function renderPersianCalendar(
         });
 
 
+    /* ---------- today ---------- */
+
     picker
         .querySelector(
             "[data-calendar-today]"
@@ -3557,27 +3555,19 @@ function renderPersianCalendar(
 
                 event.stopPropagation();
 
-                const today =
-                    new Date();
-
-
-                const jalali =
-                    gregorianToJalali(
-                        today.getFullYear(),
-                        today.getMonth() + 1,
-                        today.getDate()
-                    );
-
-
                 selectPersianDate(
-                    jalali.year,
-                    jalali.month,
-                    jalali.day
+                    todayJalali.year,
+                    todayJalali.month,
+                    todayJalali.day
                 );
             }
         );
 }
 
+
+/* =========================================================
+   SELECT DATE
+========================================================= */
 
 function selectPersianDate(
     year,
@@ -3586,7 +3576,7 @@ function selectPersianDate(
 ) {
 
     const gregorian =
-        jalaliToGregorianExact(
+        jalaliToGregorian(
             year,
             month,
             day
@@ -3604,19 +3594,25 @@ function selectPersianDate(
 
 
     if (
-        datePickerState.target
+        datePickerState.inputId &&
+        $(datePickerState.inputId)
     ) {
 
-        $(datePickerState.target).value =
+        $(
+            datePickerState.inputId
+        ).value =
             displayValue;
     }
 
 
     if (
-        datePickerState.valueTarget
+        datePickerState.valueId &&
+        $(datePickerState.valueId)
     ) {
 
-        $(datePickerState.valueTarget).value =
+        $(
+            datePickerState.valueId
+        ).value =
             databaseValue;
     }
 
@@ -3624,6 +3620,10 @@ function selectPersianDate(
     closeDatePickers();
 }
 
+
+/* =========================================================
+   SET DATE INPUT
+========================================================= */
 
 function setPersianDateInput(
     inputId,
@@ -3656,16 +3656,26 @@ function setPersianDateInput(
         );
 
 
-    $(inputId).value =
-        toPersianDigits(
-            `${jalali.year}/${pad2(jalali.month)}/${pad2(jalali.day)}`
-        );
+    if ($(inputId)) {
+
+        $(inputId).value =
+            toPersianDigits(
+                `${jalali.year}/${pad2(jalali.month)}/${pad2(jalali.day)}`
+            );
+    }
 
 
-    $(valueId).value =
-        databaseDate;
+    if ($(valueId)) {
+
+        $(valueId).value =
+            `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    }
 }
 
+
+/* =========================================================
+   CLEAR DATE INPUT
+========================================================= */
 
 function clearPersianDateInput(
     inputId,
@@ -3697,7 +3707,27 @@ function getReminderValue() {
         "";
 
 
+    /*
+     * اگر هیچ‌کدام وارد نشده باشند:
+     * null
+     */
+
+    if (!date && !time) {
+        return null;
+    }
+
+
+    /*
+     * اگر یکی وارد شده ولی دیگری نه،
+     * یادآوری ناقص است.
+     */
+
     if (!date || !time) {
+
+        alert(
+            "برای یادآوری باید هم تاریخ و هم ساعت را مشخص کنی."
+        );
+
         return null;
     }
 
@@ -3707,7 +3737,7 @@ function getReminderValue() {
 
 
 /* =========================================================
-   FINAL DATE DISPLAY
+   FINAL DATE HELPERS
 ========================================================= */
 
 function convertReminderForInput(
