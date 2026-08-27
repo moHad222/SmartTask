@@ -57,9 +57,10 @@ SESSIONS = {}
 def send_json(handler, data, status=200, session_id=None):
 
     response = json.dumps(
-        data,
-        ensure_ascii=False
-    ).encode("utf-8")
+    data,
+    ensure_ascii=False,
+    default=str
+).encode("utf-8")
 
     handler.send_response(status)
 
