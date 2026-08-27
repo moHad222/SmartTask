@@ -1,28 +1,25 @@
-import streamlit as st
+from server import SmartTaskHandler
+from http.server import HTTPServer
+import os
 
-from database.database import add_task
-from ai.model import predict_category
+
+PORT = int(os.environ.get("PORT", 8000))
 
 
-st.title("SmartTask 3")
-st.write("Task Manager هوشمند")
-
-st.subheader("ایجاد Task جدید")
-
-title = st.text_input("عنوان Task")
-
-description = st.text_area("توضیحات Task")
-
-priority = st.selectbox(
-    "اولویت",
-    ["کم", "معمولی", "زیاد", "خیلی زیاد"]
+server = HTTPServer(
+    ("0.0.0.0", PORT),
+    SmartTaskHandler
 )
 
 
-if st.button("پیشنهاد دسته‌بندی با هوش مصنوعی"):
-    if title.strip():
-        category = predict_category(title)
+print(f"SmartTask3 running on port {PORT}")
 
-        st.success(f"دسته‌بندی پیشنهادی: {category}")
-    else:
-        st.warning("لطفاً ابتدا عنوان Task را وارد کنید.")
+
+try:
+    server.serve_forever()
+
+except KeyboardInterrupt:
+    print("Server stopped.")
+
+finally:
+    server.server_close()
