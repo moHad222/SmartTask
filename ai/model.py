@@ -29,23 +29,8 @@ def load_model():
 
     if _model is None or _vectorizer is None:
 
-        if not MODEL_PATH.exists():
-            raise FileNotFoundError(
-                "فایل مدل AI پیدا نشد."
-            )
-
-        if not VECTORIZER_PATH.exists():
-            raise FileNotFoundError(
-                "فایل Vectorizer پیدا نشد."
-            )
-
-        _model = joblib.load(
-            MODEL_PATH
-        )
-
-        _vectorizer = joblib.load(
-            VECTORIZER_PATH
-        )
+        _model = joblib.load(MODEL_PATH)
+        _vectorizer = joblib.load(VECTORIZER_PATH)
 
 
 # =========================================================
@@ -65,17 +50,137 @@ def normalize_text(text):
     }
 
     for old, new in replacements.items():
-
-        text = text.replace(
-            old,
-            new
-        )
+        text = text.replace(old, new)
 
     return text
 
 
 # =========================================================
-# PREDICT CATEGORY
+# IMPORTANT KEYWORDS
+# =========================================================
+
+CATEGORY_KEYWORDS = {
+
+    "دانشگاه": [
+        "دانشگاه",
+        "استاد",
+        "امتحان",
+        "کلاس",
+        "ترم",
+        "درس",
+        "تکلیف",
+        "پروژه درسی",
+        "پروژه دانشگاه",
+        "پایان نامه",
+        "پایان‌نامه",
+        "آزمایشگاه",
+        "ارائه کلاسی",
+        "پایگاه داده",
+    ],
+
+    "برنامه نویسی": [
+        "پایتون",
+        "python",
+        "کد",
+        "کدنویسی",
+        "برنامه نویسی",
+        "برنامه‌نویسی",
+        "باگ",
+        "خطای کد",
+        "دیباگ",
+        "دیتابیس",
+        "database",
+        "api",
+        "javascript",
+        "جاوا",
+        "html",
+        "css",
+        "نرم افزار",
+        "نرم‌افزار",
+        "پیاده سازی",
+        "پیاده‌سازی",
+        "برنامه",
+    ],
+
+    "کاری": [
+        "مدیر",
+        "شرکت",
+        "مشتری",
+        "همکار",
+        "جلسه کاری",
+        "جلسه با مدیر",
+        "وظیفه",
+        "درخواست مشتری",
+        "گزارش کاری",
+        "ایمیل کاری",
+        "کار شرکت",
+    ],
+
+    "شخصی": [
+        "باشگاه",
+        "ورزش",
+        "بدنسازی",
+        "فیتنس",
+        "شنا",
+        "دویدن",
+        "پیاده روی",
+        "پیاده‌روی",
+        "یوگا",
+        "استراحت",
+        "خواب",
+        "خانه",
+        "اتاق",
+        "تمیزکاری",
+        "آشپزی",
+        "فیلم",
+        "سریال",
+        "موسیقی",
+        "دوست",
+        "خودم",
+        "وقت برای خودم",
+    ],
+
+    "خرید": [
+        "خرید",
+        "خریدن",
+        "بخرم",
+        "بگیرم",
+        "تهیه کنم",
+        "تهیه",
+        "فروشگاه",
+        "سوپرمارکت",
+        "لباس",
+        "کفش",
+        "کیف",
+        "لوازم",
+        "وسایل",
+        "مواد غذایی",
+        "سفارش",
+    ],
+
+    "مالی": [
+        "پول",
+        "بانک",
+        "حساب",
+        "قسط",
+        "قبض",
+        "پرداخت",
+        "حقوق",
+        "بودجه",
+        "هزینه",
+        "خرج",
+        "خرج کردم",
+        "درآمد",
+        "تراکنش",
+        "بدهی",
+        "وام",
+        "مالی",
+    ],
+}
+
+
+# =========================================================
+# PREDICT
 # =========================================================
 
 def predict_category(title):
@@ -86,6 +191,42 @@ def predict_category(title):
         return "تعیین نشده"
 
     load_model()
+
+    # -----------------------------------------------------
+    # Rule-based score
+    # -----------------------------------------------------
+
+    keyword_scores = {
+        category: 0
+        for category in CATEGORIES
+    }
+
+    for category, keywords in CATEGORY_KEYWORDS.items():
+
+        for keyword in keywords:
+
+            keyword = normalize_text(keyword)
+
+            if keyword in text:
+                keyword_scores[category] += 1
+
+    # اگر عبارت خیلی واضح باشد، همان دسته را انتخاب کن
+    best_keyword_category = max(
+        keyword_scores,
+        key=keyword_scores.get
+    )
+
+    best_keyword_score = keyword_scores[
+        best_keyword_category
+    ]
+
+    if best_keyword_score >= 1:
+
+        return best_keyword_category
+
+    # -----------------------------------------------------
+    # ML prediction
+    # -----------------------------------------------------
 
     vector = _vectorizer.transform(
         [text]
@@ -106,19 +247,13 @@ def predict_category(title):
     ]
 
     # -----------------------------------------------------
-    # اگر مدل اطمینان کافی نداشت
+    # Confidence threshold
     # -----------------------------------------------------
 
     if confidence < 0.35:
-
         return "تعیین نشده"
 
-    # -----------------------------------------------------
-    # فقط دسته‌های معتبر پروژه
-    # -----------------------------------------------------
-
     if category not in CATEGORIES:
-
         return "تعیین نشده"
 
     return category

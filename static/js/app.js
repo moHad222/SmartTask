@@ -15,23 +15,11 @@ let currentUser = {
 };
 
 
-// =========================================================
-// REMINDER
-// =========================================================
-
-let reminderCheckInterval = null;
-
-const notifiedReminders = new Set();
-
-const REMINDER_CHECK_INTERVAL = 30 * 1000;
-
-
-// =========================================================
+// =========================
 // HELPERS
-// =========================================================
+// =========================
 
 const $ = id => document.getElementById(id);
-
 
 function escapeHtml(value) {
 
@@ -44,22 +32,18 @@ function escapeHtml(value) {
 }
 
 
-// =========================================================
+// =========================
 // START
-// =========================================================
+// =========================
 
 document.addEventListener(
     "DOMContentLoaded",
     initializeApp
 );
 
-
 async function initializeApp() {
 
     setupEvents();
-
-    addReminderNotificationStyles();
-
     updateUserUI();
 
     try {
@@ -98,13 +82,29 @@ async function initializeApp() {
         );
     }
 
+    // =========================
+    // NOTIFICATIONS
+    // =========================
+
+    try {
+
+        await requestNotificationPermission();
+
+    } catch (error) {
+
+        console.error(
+            "Notification setup error:",
+            error
+        );
+    }
+
     startReminderChecker();
 }
 
 
-// =========================================================
+// =========================
 // SESSION
-// =========================================================
+// =========================
 
 async function loadSession() {
 
@@ -124,12 +124,10 @@ async function loadSession() {
     updateUserUI();
 }
 
-
 function updateUserUI() {
 
     const username =
-        currentUser.username ||
-        "مهمان";
+        currentUser.username || "مهمان";
 
     if ($("currentUsername")) {
 
@@ -165,9 +163,9 @@ function updateUserUI() {
 }
 
 
-// =========================================================
+// =========================
 // OPTIONS
-// =========================================================
+// =========================
 
 async function loadOptions() {
 
@@ -200,14 +198,7 @@ async function loadOptions() {
         $("priority"),
         options.priorities
     );
-
-    fillSelect(
-        $("statusFilter"),
-        options.statuses,
-        "همه وضعیت‌ها"
-    );
 }
-
 
 function fillSelect(
     select,
@@ -215,9 +206,7 @@ function fillSelect(
     defaultText = null
 ) {
 
-    if (!select) {
-        return;
-    }
+    if (!select) return;
 
     select.innerHTML = "";
 
@@ -227,15 +216,9 @@ function fillSelect(
             document.createElement("option");
 
         option.value = "";
-
-        option.textContent =
-            defaultText;
+        option.textContent = defaultText;
 
         select.appendChild(option);
-    }
-
-    if (!Array.isArray(values)) {
-        return;
     }
 
     values.forEach(value => {
@@ -244,7 +227,6 @@ function fillSelect(
             document.createElement("option");
 
         option.value = value;
-
         option.textContent = value;
 
         select.appendChild(option);
@@ -252,9 +234,9 @@ function fillSelect(
 }
 
 
-// =========================================================
+// =========================
 // EVENTS
-// =========================================================
+// =========================
 
 function setupEvents() {
 
@@ -283,6 +265,7 @@ function setupEvents() {
         predictCategory
     );
 
+
     [
         "taskSearch",
         "categoryFilter",
@@ -300,9 +283,10 @@ function setupEvents() {
 
     });
 
-    // =====================================================
+
+    // =========================
     // AUTH
-    // =====================================================
+    // =========================
 
     $("loginButton")?.addEventListener(
         "click",
@@ -349,21 +333,21 @@ function setupEvents() {
         logoutUser
     );
 
-    // =====================================================
+
+    // =========================
     // MODAL BACKDROP
-    // =====================================================
+    // =========================
 
     $("taskModal")?.addEventListener(
         "click",
         event => {
 
             if (
-                event.target ===
-                $("taskModal")
+                event.target === $("taskModal")
             ) {
-
                 closeTaskModal();
             }
+
         }
     );
 
@@ -372,18 +356,18 @@ function setupEvents() {
         event => {
 
             if (
-                event.target ===
-                $("authModal")
+                event.target === $("authModal")
             ) {
-
                 closeAuthModal();
             }
+
         }
     );
 
-    // =====================================================
+
+    // =========================
     // ESCAPE
-    // =====================================================
+    // =========================
 
     document.addEventListener(
         "keydown",
@@ -392,63 +376,52 @@ function setupEvents() {
             if (event.key === "Escape") {
 
                 closeTaskModal();
-
                 closeAuthModal();
             }
+
         }
     );
 }
 
 
-// =========================================================
+// =========================
 // AUTH MODAL
-// =========================================================
+// =========================
 
 function openAuthModal() {
 
     const modal =
         $("authModal");
 
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
     showAuthTab("login");
-
     clearAuthMessages();
 
     modal.classList.add("active");
-
     modal.style.display = "flex";
 
     setTimeout(
-        () =>
-            $("loginUsername")?.focus(),
+        () => $("loginUsername")?.focus(),
         100
     );
 }
-
 
 function closeAuthModal() {
 
     const modal =
         $("authModal");
 
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
     modal.classList.remove("active");
-
     modal.style.display = "none";
 
     clearAuthMessages();
 
     $("loginForm")?.reset();
-
     $("registerForm")?.reset();
 }
-
 
 function showAuthTab(tab) {
 
@@ -486,7 +459,6 @@ function showAuthTab(tab) {
     clearAuthMessages();
 }
 
-
 function clearAuthMessages() {
 
     [
@@ -494,19 +466,16 @@ function clearAuthMessages() {
         "registerMessage"
     ].forEach(id => {
 
-        const element = $(id);
+        const element =
+            $(id);
 
-        if (!element) {
-            return;
-        }
+        if (!element) return;
 
         element.textContent = "";
-
         element.className =
             "auth-message";
     });
 }
-
 
 function showAuthMessage(
     elementId,
@@ -517,9 +486,7 @@ function showAuthMessage(
     const element =
         $(elementId);
 
-    if (!element) {
-        return;
-    }
+    if (!element) return;
 
     element.textContent =
         message;
@@ -529,9 +496,9 @@ function showAuthMessage(
 }
 
 
-// =========================================================
+// =========================
 // LOGIN
-// =========================================================
+// =========================
 
 async function loginUser(event) {
 
@@ -588,12 +555,8 @@ async function loginUser(event) {
         }
 
         currentUser = {
-
-            username:
-                data.username,
-
+            username: data.username,
             logged_in: true,
-
             is_guest: false
         };
 
@@ -624,9 +587,9 @@ async function loginUser(event) {
 }
 
 
-// =========================================================
+// =========================
 // REGISTER
-// =========================================================
+// =========================
 
 async function registerUser(event) {
 
@@ -656,8 +619,7 @@ async function registerUser(event) {
     }
 
     if (
-        password !==
-        repeatPassword
+        password !== repeatPassword
     ) {
 
         showAuthMessage(
@@ -700,12 +662,8 @@ async function registerUser(event) {
         }
 
         currentUser = {
-
-            username:
-                data.username,
-
+            username: data.username,
             logged_in: true,
-
             is_guest: false
         };
 
@@ -736,9 +694,9 @@ async function registerUser(event) {
 }
 
 
-// =========================================================
+// =========================
 // GUEST
-// =========================================================
+// =========================
 
 async function continueAsGuest() {
 
@@ -764,11 +722,8 @@ async function continueAsGuest() {
         }
 
         currentUser = {
-
             username: "مهمان",
-
             logged_in: false,
-
             is_guest: true
         };
 
@@ -790,9 +745,9 @@ async function continueAsGuest() {
 }
 
 
-// =========================================================
+// =========================
 // LOGOUT
-// =========================================================
+// =========================
 
 async function logoutUser() {
 
@@ -801,7 +756,6 @@ async function logoutUser() {
             "آیا می‌خواهی از حساب خارج شوی؟"
         )
     ) {
-
         return;
     }
 
@@ -827,11 +781,8 @@ async function logoutUser() {
         }
 
         currentUser = {
-
             username: "مهمان",
-
             logged_in: false,
-
             is_guest: true
         };
 
@@ -855,9 +806,9 @@ async function logoutUser() {
 }
 
 
-// =========================================================
+// =========================
 // TASK MODAL
-// =========================================================
+// =========================
 
 function openCreateModal() {
 
@@ -870,21 +821,16 @@ function openCreateModal() {
     const modal =
         $("taskModal");
 
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
     modal.classList.add("active");
-
     modal.style.display = "flex";
 
     setTimeout(
-        () =>
-            $("title")?.focus(),
+        () => $("title")?.focus(),
         100
     );
 }
-
 
 function openEditModal(taskId) {
 
@@ -897,9 +843,7 @@ function openEditModal(taskId) {
 
     if (!task) {
 
-        alert(
-            "کار پیدا نشد."
-        );
+        alert("کار پیدا نشد.");
 
         return;
     }
@@ -916,8 +860,7 @@ function openEditModal(taskId) {
         task.description || "";
 
     $("priority").value =
-        task.priority ||
-        "معمولی";
+        task.priority || "معمولی";
 
     $("dueDate").value =
         task.due_date || "";
@@ -949,30 +892,23 @@ function openEditModal(taskId) {
     const modal =
         $("taskModal");
 
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
     modal.classList.add("active");
-
     modal.style.display = "flex";
 
     setTimeout(
-        () =>
-            $("title")?.focus(),
+        () => $("title")?.focus(),
         100
     );
 }
-
 
 function setModalMode(isEdit) {
 
     const modal =
         $("taskModal");
 
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
     const title =
         modal.querySelector(
@@ -987,13 +923,11 @@ function setModalMode(isEdit) {
     if (isEdit) {
 
         if (title) {
-
             title.textContent =
                 "ویرایش کار";
         }
 
         if (submit) {
-
             submit.textContent =
                 "ذخیره تغییرات";
         }
@@ -1001,35 +935,26 @@ function setModalMode(isEdit) {
     } else {
 
         if (title) {
-
             title.textContent =
                 "افزودن کار جدید";
         }
 
         if (submit) {
-
             submit.textContent =
                 "ثبت کار";
         }
     }
 }
 
-
 function closeTaskModal() {
 
     const modal =
         $("taskModal");
 
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
-    modal.classList.remove(
-        "active"
-    );
-
-    modal.style.display =
-        "none";
+    modal.classList.remove("active");
+    modal.style.display = "none";
 
     editingTaskId = null;
 
@@ -1038,7 +963,6 @@ function closeTaskModal() {
     setModalMode(false);
 }
 
-
 function resetTaskForm() {
 
     $("taskForm")?.reset();
@@ -1046,9 +970,7 @@ function resetTaskForm() {
     const result =
         $("categoryResult");
 
-    if (!result) {
-        return;
-    }
+    if (!result) return;
 
     result.textContent = "";
 
@@ -1060,9 +982,9 @@ function resetTaskForm() {
 }
 
 
-// =========================================================
+// =========================
 // LOAD TASKS
-// =========================================================
+// =========================
 
 async function loadTasks() {
 
@@ -1085,27 +1007,26 @@ async function loadTasks() {
 
     renderReminders(allTasks);
 
+    // بعد از دریافت کارهای جدید،
+    // یادآوری‌ها را هم دوباره بررسی کن.
     checkRemindersNow();
 }
 
 
-// =========================================================
+// =========================
 // RENDER TASKS
-// =========================================================
+// =========================
 
 function renderTasks(tasks) {
 
     const list =
         $("taskList");
 
-    if (!list) {
-        return;
-    }
+    if (!list) return;
 
     if (!tasks.length) {
 
         list.innerHTML = `
-
             <div class="empty-state">
 
                 <div class="empty-icon">
@@ -1137,8 +1058,11 @@ function renderTasks(tasks) {
         card.className =
             "task-card";
 
-        card.innerHTML = `
+        // برای پیدا کردن کار مربوط به Notification
+        card.dataset.taskId =
+            task.id;
 
+        card.innerHTML = `
             <div class="task-content">
 
                 <div class="task-title-row">
@@ -1156,24 +1080,20 @@ function renderTasks(tasks) {
                 </div>
 
                 <p class="task-description">
-                    ${escapeHtml(
-                        task.description || ""
-                    )}
+                    ${escapeHtml(task.description || "")}
                 </p>
 
                 <div class="task-meta">
 
                     <span>
                         📁 ${escapeHtml(
-                            task.category ||
-                            "تعیین نشده"
+                            task.category || "عمومی"
                         )}
                     </span>
 
                     <span>
                         ⚡ ${escapeHtml(
-                            task.priority ||
-                            "معمولی"
+                            task.priority || "معمولی"
                         )}
                     </span>
 
@@ -1181,9 +1101,7 @@ function renderTasks(tasks) {
                         📅 ${
                             task.due_date
                                 ? escapeHtml(
-                                    formatDateForDisplay(
-                                        task.due_date
-                                    )
+                                    task.due_date
                                 )
                                 : "بدون سررسید"
                         }
@@ -1192,10 +1110,8 @@ function renderTasks(tasks) {
                     <span>
                         🔔 ${
                             task.reminder_at
-                                ? escapeHtml(
-                                    formatReminder(
-                                        task.reminder_at
-                                    )
+                                ? formatReminder(
+                                    task.reminder_at
                                 )
                                 : "بدون یادآوری"
                         }
@@ -1231,6 +1147,7 @@ function renderTasks(tasks) {
             </div>
         `;
 
+
         card
             .querySelector(
                 ".status-task-button"
@@ -1244,6 +1161,7 @@ function renderTasks(tasks) {
                     )
             );
 
+
         card
             .querySelector(
                 ".edit-task-button"
@@ -1255,6 +1173,7 @@ function renderTasks(tasks) {
                         task.id
                     )
             );
+
 
         card
             .querySelector(
@@ -1268,26 +1187,22 @@ function renderTasks(tasks) {
                     )
             );
 
+
         list.appendChild(card);
     });
 }
 
-
 function getStatusClass(status) {
 
     if (
-        status ===
-        "انجام شده"
+        status === "انجام شده"
     ) {
-
         return "status-completed";
     }
 
     if (
-        status ===
-        "در حال انجام"
+        status === "در حال انجام"
     ) {
-
         return "status-progress";
     }
 
@@ -1295,9 +1210,9 @@ function getStatusClass(status) {
 }
 
 
-// =========================================================
+// =========================
 // DASHBOARD
-// =========================================================
+// =========================
 
 function updateDashboard(tasks) {
 
@@ -1337,9 +1252,9 @@ function updateDashboard(tasks) {
 }
 
 
-// =========================================================
+// =========================
 // FORM
-// =========================================================
+// =========================
 
 async function handleTaskSubmit(event) {
 
@@ -1396,11 +1311,13 @@ async function handleTaskSubmit(event) {
 }
 
 
-// =========================================================
-// CREATE / UPDATE FORM DATA
-// =========================================================
+// =========================
+// CREATE
+// =========================
 
-function getTaskFormData(category) {
+function getTaskFormData(
+    category
+) {
 
     return {
 
@@ -1421,21 +1338,10 @@ function getTaskFormData(category) {
 
         category,
 
-        // =============================================
-        // IMPORTANT:
-        // input type="date" is already Gregorian.
-        // Do NOT convert it to Jalali here.
-        // =============================================
-
         due_date:
             $("dueDate")
                 ?.value ||
             null,
-
-        // =============================================
-        // datetime-local is also sent as Gregorian
-        // local date/time.
-        // =============================================
 
         reminder_at:
             $("reminderAt")
@@ -1444,12 +1350,9 @@ function getTaskFormData(category) {
     };
 }
 
-
-// =========================================================
-// CREATE
-// =========================================================
-
-async function createTask(category) {
+async function createTask(
+    category
+) {
 
     try {
 
@@ -1464,11 +1367,12 @@ async function createTask(category) {
                             "application/json"
                     },
 
-                    body: JSON.stringify(
-                        getTaskFormData(
-                            category
+                    body:
+                        JSON.stringify(
+                            getTaskFormData(
+                                category
+                            )
                         )
-                    )
                 }
             );
 
@@ -1502,9 +1406,9 @@ async function createTask(category) {
 }
 
 
-// =========================================================
+// =========================
 // UPDATE
-// =========================================================
+// =========================
 
 async function updateTask(
     taskId,
@@ -1533,9 +1437,8 @@ async function updateTask(
                             "application/json"
                     },
 
-                    body: JSON.stringify(
-                        data
-                    )
+                    body:
+                        JSON.stringify(data)
                 }
             );
 
@@ -1569,9 +1472,9 @@ async function updateTask(
 }
 
 
-// =========================================================
+// =========================
 // AI
-// =========================================================
+// =========================
 
 async function predictCategory() {
 
@@ -1606,9 +1509,10 @@ async function predictCategory() {
                             "application/json"
                     },
 
-                    body: JSON.stringify({
-                        title
-                    })
+                    body:
+                        JSON.stringify({
+                            title
+                        })
                 }
             );
 
@@ -1625,10 +1529,6 @@ async function predictCategory() {
 
         const result =
             $("categoryResult");
-
-        if (!result) {
-            return;
-        }
 
         result.dataset.category =
             data.category;
@@ -1649,15 +1549,14 @@ async function predictCategory() {
     }
 }
 
-
-function showCategoryMessage(message) {
+function showCategoryMessage(
+    message
+) {
 
     const result =
         $("categoryResult");
 
-    if (!result) {
-        return;
-    }
+    if (!result) return;
 
     result.textContent =
         message;
@@ -1668,9 +1567,9 @@ function showCategoryMessage(message) {
 }
 
 
-// =========================================================
+// =========================
 // STATUS
-// =========================================================
+// =========================
 
 async function changeTaskStatus(
     taskId,
@@ -1689,14 +1588,11 @@ async function changeTaskStatus(
         nextIndex >=
         options.statuses.length
     ) {
-
         nextIndex = 0;
     }
 
     const nextStatus =
-        options.statuses[
-            nextIndex
-        ];
+        options.statuses[nextIndex];
 
     try {
 
@@ -1711,10 +1607,14 @@ async function changeTaskStatus(
                             "application/json"
                     },
 
-                    body: JSON.stringify({
-                        task_id: taskId,
-                        status: nextStatus
-                    })
+                    body:
+                        JSON.stringify({
+                            task_id:
+                                taskId,
+
+                            status:
+                                nextStatus
+                        })
                 }
             );
 
@@ -1741,18 +1641,19 @@ async function changeTaskStatus(
 }
 
 
-// =========================================================
+// =========================
 // DELETE
-// =========================================================
+// =========================
 
-async function deleteTask(taskId) {
+async function deleteTask(
+    taskId
+) {
 
     if (
         !confirm(
-            "آیا از حذف کردنش مطمئن هستی؟"
+            "آیا مطمئنی می‌خواهی این کار را حذف کنی؟"
         )
     ) {
-
         return;
     }
 
@@ -1769,9 +1670,11 @@ async function deleteTask(taskId) {
                             "application/json"
                     },
 
-                    body: JSON.stringify({
-                        task_id: taskId
-                    })
+                    body:
+                        JSON.stringify({
+                            task_id:
+                                taskId
+                        })
                 }
             );
 
@@ -1803,9 +1706,9 @@ async function deleteTask(taskId) {
 }
 
 
-// =========================================================
+// =========================
 // FILTERS
-// =========================================================
+// =========================
 
 function applyFilters() {
 
@@ -1813,28 +1716,24 @@ function applyFilters() {
         $("taskSearch")
             ?.value
             .trim()
-            .toLowerCase() ||
-        "";
+            .toLowerCase() || "";
 
     const category =
         $("categoryFilter")
-            ?.value ||
-        "";
+            ?.value || "";
 
     const priority =
         $("priorityFilter")
-            ?.value ||
-        "";
+            ?.value || "";
 
     const status =
         $("statusFilter")
-            ?.value ||
-        "";
+            ?.value || "";
 
     const dueDate =
         $("dueDateFilter")
-            ?.value ||
-        "";
+            ?.value || "";
+
 
     const filtered =
         allTasks.filter(task => {
@@ -1842,7 +1741,9 @@ function applyFilters() {
             const text = [
 
                 task.title,
+
                 task.description,
+
                 task.category
 
             ]
@@ -1850,40 +1751,38 @@ function applyFilters() {
                 .join(" ")
                 .toLowerCase();
 
+
             if (
                 search &&
                 !text.includes(search)
             ) {
-
                 return false;
             }
+
 
             if (
                 category &&
-                task.category !==
-                category
+                task.category !== category
             ) {
-
                 return false;
             }
+
 
             if (
                 priority &&
-                task.priority !==
-                priority
+                task.priority !== priority
             ) {
-
                 return false;
             }
+
 
             if (
                 status &&
-                task.status !==
-                status
+                task.status !== status
             ) {
-
                 return false;
             }
+
 
             if (
                 dueDate &&
@@ -1892,12 +1791,13 @@ function applyFilters() {
                     dueDate
                 )
             ) {
-
                 return false;
             }
 
+
             return true;
         });
+
 
     renderTasks(filtered);
 
@@ -1906,30 +1806,28 @@ function applyFilters() {
     renderReminders(filtered);
 }
 
-
 function resetFilters() {
 
     [
-
         "taskSearch",
         "categoryFilter",
         "priorityFilter",
         "statusFilter",
         "dueDateFilter"
-
     ].forEach(id => {
 
         if ($(id)) {
 
             $(id).value = "";
         }
+
     });
 }
 
 
-// =========================================================
-// DUE DATE FILTER
-// =========================================================
+// =========================
+// DUE DATE
+// =========================
 
 function checkDueDate(
     value,
@@ -1952,13 +1850,10 @@ function checkDueDate(
     );
 
     const date =
-        parseGregorianDateOnly(
-            value
+        new Date(
+            `${value}T00:00:00`
         );
 
-    if (!date) {
-        return false;
-    }
 
     if (
         filter === "today"
@@ -1970,6 +1865,7 @@ function checkDueDate(
         );
     }
 
+
     if (
         filter === "upcoming"
     ) {
@@ -1977,20 +1873,14 @@ function checkDueDate(
         return date > today;
     }
 
-    if (
-        filter === "none"
-    ) {
 
-        return false;
-    }
-
-    return true;
+    return filter !== "none";
 }
 
 
-// =========================================================
+// =========================
 // REMINDERS
-// =========================================================
+// =========================
 
 function getUpcomingReminders(
     tasks
@@ -2018,7 +1908,6 @@ function getUpcomingReminders(
             task.status ===
             "انجام شده"
         ) {
-
             return false;
         }
 
@@ -2027,21 +1916,13 @@ function getUpcomingReminders(
                 task.reminder_at
             );
 
-        if (!reminder) {
-            return false;
-        }
-
         return (
+            reminder &&
             reminder >= now &&
             reminder <= limit
         );
     });
 }
-
-
-// =========================================================
-// PARSE REMINDER
-// =========================================================
 
 function parseReminderDate(
     value
@@ -2051,40 +1932,25 @@ function parseReminderDate(
         return null;
     }
 
-    let normalized =
-        String(value).trim();
-
-    normalized =
-        normalized.replace(
-            " ",
-            "T"
-        );
-
-    // PostgreSQL may return milliseconds
-    // and timezone information.
-    // Browser can parse standard ISO values.
-
-    const date =
-        new Date(
-            normalized
-        );
+    const normalized =
+        String(value)
+            .replace(" ", "T");
 
     if (
-        Number.isNaN(
-            date.getTime()
-        )
+        !normalized.includes("T")
     ) {
-
         return null;
     }
 
-    return date;
+    const date =
+        new Date(normalized);
+
+    return Number.isNaN(
+        date.getTime()
+    )
+        ? null
+        : date;
 }
-
-
-// =========================================================
-// REMINDER INPUT
-// =========================================================
 
 function convertReminderForInput(
     value
@@ -2094,425 +1960,22 @@ function convertReminderForInput(
         return "";
     }
 
-    let normalized =
+    const normalized =
         String(value)
-            .trim()
-            .replace(
-                " ",
-                "T"
-            );
+            .replace(" ", "T");
 
-    // datetime-local needs:
-    // YYYY-MM-DDTHH:MM
-
-    if (
-        normalized.length >= 16
-    ) {
-
-        return normalized.substring(
+    return normalized.length >= 16
+        ? normalized.substring(
             0,
             16
-        );
-    }
-
-    return normalized;
+        )
+        : normalized;
 }
 
 
-// =========================================================
-// IN-SITE REMINDER CHECKER
-// =========================================================
-
-function startReminderChecker() {
-
-    checkRemindersNow();
-
-    if (reminderCheckInterval) {
-
-        clearInterval(
-            reminderCheckInterval
-        );
-    }
-
-    reminderCheckInterval =
-        setInterval(
-            checkRemindersNow,
-            REMINDER_CHECK_INTERVAL
-        );
-}
-
-
-function checkRemindersNow() {
-
-    if (
-        !Array.isArray(allTasks) ||
-        !allTasks.length
-    ) {
-
-        return;
-    }
-
-    const now =
-        new Date();
-
-    allTasks.forEach(task => {
-
-        if (!task.reminder_at) {
-            return;
-        }
-
-        if (
-            task.status ===
-            "انجام شده"
-        ) {
-
-            return;
-        }
-
-        const reminderDate =
-            parseReminderDate(
-                task.reminder_at
-            );
-
-        if (!reminderDate) {
-            return;
-        }
-
-        const reminderKey =
-            `${task.id}_${task.reminder_at}`;
-
-        if (
-            notifiedReminders.has(
-                reminderKey
-            )
-        ) {
-
-            return;
-        }
-
-        if (
-            reminderDate <= now
-        ) {
-
-            showReminderNotification(
-                task
-            );
-
-            notifiedReminders.add(
-                reminderKey
-            );
-        }
-    });
-}
-
-
-// =========================================================
-// NOTIFICATION STYLES
-// =========================================================
-
-function addReminderNotificationStyles() {
-
-    if (
-        $("reminderNotificationStyles")
-    ) {
-
-        return;
-    }
-
-    const style =
-        document.createElement(
-            "style"
-        );
-
-    style.id =
-        "reminderNotificationStyles";
-
-    style.textContent = `
-
-        @keyframes reminderSlideIn {
-
-            from {
-                opacity: 0;
-                transform:
-                    translateX(35px);
-            }
-
-            to {
-                opacity: 1;
-                transform:
-                    translateX(0);
-            }
-        }
-
-        @keyframes reminderSlideOut {
-
-            from {
-                opacity: 1;
-                transform:
-                    translateX(0);
-            }
-
-            to {
-                opacity: 0;
-                transform:
-                    translateX(35px);
-            }
-        }
-
-        #notificationContainer {
-
-            position: fixed;
-
-            top: 20px;
-
-            right: 20px;
-
-            z-index: 99999;
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 12px;
-
-            width:
-                min(
-                    380px,
-                    calc(100vw - 40px)
-                );
-
-            direction: rtl;
-
-            pointer-events: none;
-        }
-
-        .site-reminder-notification {
-
-            pointer-events: auto;
-
-            position: relative;
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 12px;
-
-            padding: 15px 16px;
-
-            background: #fffaf3;
-
-            border:
-                1px solid
-                #d8b08c;
-
-            border-radius: 14px;
-
-            box-shadow:
-                0 10px 30px
-                rgba(0, 0, 0, .18);
-
-            animation:
-                reminderSlideIn
-                .35s ease;
-
-            font-family: inherit;
-        }
-
-        .site-reminder-icon {
-
-            font-size: 28px;
-
-            flex-shrink: 0;
-        }
-
-        .site-reminder-content {
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 5px;
-
-            flex: 1;
-
-            min-width: 0;
-        }
-
-        .site-reminder-content strong {
-
-            color: #5b2525;
-
-            font-size: 15px;
-        }
-
-        .site-reminder-content span {
-
-            color: #6f6258;
-
-            font-size: 14px;
-
-            line-height: 1.6;
-
-            word-break: break-word;
-        }
-
-        .site-reminder-close {
-
-            border: none;
-
-            background: transparent;
-
-            font-size: 24px;
-
-            cursor: pointer;
-
-            color: #8a7770;
-
-            padding: 0 4px;
-
-            line-height: 1;
-        }
-
-        .site-reminder-close:hover {
-
-            color: #5b2525;
-        }
-
-        @media (max-width: 600px) {
-
-            #notificationContainer {
-
-                top: 10px !important;
-
-                right: 10px !important;
-
-                width:
-                    calc(100vw - 20px)
-                    !important;
-            }
-        }
-    `;
-
-    document.head.appendChild(
-        style
-    );
-}
-
-
-// =========================================================
-// SHOW REMINDER
-// =========================================================
-
-function showReminderNotification(
-    task
-) {
-
-    let container =
-        $("notificationContainer");
-
-    if (!container) {
-
-        container =
-            document.createElement(
-                "div"
-            );
-
-        container.id =
-            "notificationContainer";
-
-        document.body.appendChild(
-            container
-        );
-    }
-
-    const notification =
-        document.createElement(
-            "div"
-        );
-
-    notification.className =
-        "site-reminder-notification";
-
-    notification.innerHTML = `
-
-        <div class="site-reminder-icon">
-            🔔
-        </div>
-
-        <div class="site-reminder-content">
-
-            <strong>
-                وقت یادآوری رسید
-            </strong>
-
-            <span>
-                ${escapeHtml(
-                    task.title
-                )}
-            </span>
-
-        </div>
-
-        <button
-            type="button"
-            class="site-reminder-close"
-            aria-label="بستن"
-        >
-            ×
-        </button>
-    `;
-
-    const closeButton =
-        notification.querySelector(
-            ".site-reminder-close"
-        );
-
-    closeButton?.addEventListener(
-        "click",
-        () => {
-
-            notification.style.animation =
-                "reminderSlideOut .25s ease";
-
-            setTimeout(
-                () =>
-                    notification.remove(),
-                250
-            );
-        }
-    );
-
-    container.appendChild(
-        notification
-    );
-
-    setTimeout(
-        () => {
-
-            if (
-                notification.isConnected
-            ) {
-
-                notification.style.animation =
-                    "reminderSlideOut .25s ease";
-
-                setTimeout(
-                    () =>
-                        notification.remove(),
-                    250
-                );
-            }
-
-        },
-        8000
-    );
-}
-
-
-// =========================================================
+// =========================
 // RENDER REMINDERS
-// =========================================================
+// =========================
 
 function renderReminders(
     tasks
@@ -2521,9 +1984,7 @@ function renderReminders(
     const list =
         $("reminderList");
 
-    if (!list) {
-        return;
-    }
+    if (!list) return;
 
     const reminders =
         getUpcomingReminders(
@@ -2533,12 +1994,9 @@ function renderReminders(
     if (!reminders.length) {
 
         list.innerHTML = `
-
             <div class="no-reminders">
 
-                <span>
-                    🔕
-                </span>
+                <span>🔕</span>
 
                 <p>
                     در ۲۴ ساعت آینده
@@ -2574,7 +2032,6 @@ function renderReminders(
                 "reminder-card";
 
             item.innerHTML = `
-
                 <div class="reminder-icon">
                     🔔
                 </div>
@@ -2588,49 +2045,28 @@ function renderReminders(
                     </strong>
 
                     <span>
-                        ${escapeHtml(
-                            formatReminder(
-                                task.reminder_at
-                            )
+                        ${formatReminder(
+                            task.reminder_at
                         )}
                     </span>
 
                 </div>
             `;
 
-            list.appendChild(
-                item
-            );
+            list.appendChild(item);
         });
 }
 
 
-// =========================================================
-// DATE DISPLAY
-// =========================================================
-//
-// IMPORTANT:
-//
-// Input:
-// Gregorian
-//
-// Database:
-// Gregorian
-//
-// JavaScript calculation:
-// Gregorian
-//
-// Display:
-// Jalali / Persian
-//
-// =========================================================
+// =========================
+// FORMAT DATE
+// =========================
 
 function formatReminder(
     value
 ) {
 
     if (!value) {
-
         return "بدون یادآوری";
     }
 
@@ -2640,12 +2076,11 @@ function formatReminder(
         );
 
     if (!date) {
-
         return value;
     }
 
     return date.toLocaleString(
-        "fa-IR-u-ca-persian",
+        "fa-IR",
         {
             dateStyle: "short",
             timeStyle: "short"
@@ -2654,99 +2089,391 @@ function formatReminder(
 }
 
 
-function formatDateForDisplay(
-    value
-) {
+// =========================
+// BROWSER NOTIFICATIONS
+// =========================
 
-    if (!value) {
-        return "";
-    }
+const REMINDER_STORAGE_KEY =
+    "smarttask3_shown_reminders";
 
-    const date =
-        parseGregorianDateOnly(
-            value
+let reminderChecker = null;
+
+
+// -------------------------
+// ذخیره اعلان‌های نمایش داده‌شده
+// -------------------------
+
+function getShownReminderKeys() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                REMINDER_STORAGE_KEY
+            );
+
+        if (!saved) {
+            return new Set();
+        }
+
+        const parsed =
+            JSON.parse(saved);
+
+        if (!Array.isArray(parsed)) {
+            return new Set();
+        }
+
+        return new Set(parsed);
+
+    } catch (error) {
+
+        console.error(
+            "Reminder storage read error:",
+            error
         );
 
-    if (!date) {
-
-        return value;
+        return new Set();
     }
+}
 
-    return date.toLocaleDateString(
-        "fa-IR-u-ca-persian"
-    );
+function saveShownReminderKeys(
+    keys
+) {
+
+    try {
+
+        localStorage.setItem(
+            REMINDER_STORAGE_KEY,
+            JSON.stringify(
+                Array.from(keys)
+            )
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Reminder storage save error:",
+            error
+        );
+    }
 }
 
 
-// =========================================================
-// GREGORIAN DATE PARSER
-// =========================================================
-//
-// No Jalali conversion happens here.
-// The value is Gregorian.
-// This function is only for safe parsing.
-//
+// -------------------------
+// کلید یکتای هر یادآوری
+// -------------------------
 
-function parseGregorianDateOnly(
-    value
+function getReminderNotificationKey(
+    task
 ) {
 
-    if (!value) {
-        return null;
-    }
+    return [
+        "smarttask3",
+        "reminder",
+        task.id,
+        task.reminder_at
+    ].join("-");
+}
 
-    const parts =
-        String(value)
-            .substring(0, 10)
-            .split("-");
 
-    if (
-        parts.length !== 3
-    ) {
+// -------------------------
+// درخواست اجازه Notification
+// -------------------------
 
-        return null;
-    }
-
-    const year =
-        Number(parts[0]);
-
-    const month =
-        Number(parts[1]);
-
-    const day =
-        Number(parts[2]);
+async function requestNotificationPermission() {
 
     if (
-        !year ||
-        !month ||
-        !day
+        !("Notification" in window)
     ) {
 
-        return null;
-    }
-
-    const date =
-        new Date(
-            year,
-            month - 1,
-            day
+        console.warn(
+            "مرورگر این سیستم از Notification پشتیبانی نمی‌کند."
         );
 
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return null;
+        return false;
     }
 
-    date.setHours(
-        0,
-        0,
-        0,
-        0
-    );
 
-    return date;
+    if (
+        Notification.permission ===
+        "granted"
+    ) {
+
+        return true;
+    }
+
+
+    if (
+        Notification.permission ===
+        "denied"
+    ) {
+
+        console.warn(
+            "اجازه Notification توسط کاربر رد شده است."
+        );
+
+        return false;
+    }
+
+
+    try {
+
+        const permission =
+            await Notification.requestPermission();
+
+        return (
+            permission ===
+            "granted"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Notification permission error:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+// -------------------------
+// شروع بررسی یادآوری‌ها
+// -------------------------
+
+function startReminderChecker() {
+
+    if (reminderChecker) {
+
+        clearInterval(
+            reminderChecker
+        );
+    }
+
+
+    // بلافاصله یک بار بررسی
+    checkRemindersNow();
+
+
+    // سپس هر ثانیه بررسی
+    reminderChecker =
+        setInterval(
+            checkRemindersNow,
+            1000
+        );
+}
+
+
+// -------------------------
+// بررسی زمان یادآوری‌ها
+// -------------------------
+
+function checkRemindersNow() {
+
+    if (
+        !Array.isArray(allTasks)
+    ) {
+        return;
+    }
+
+
+    if (
+        !("Notification" in window)
+    ) {
+        return;
+    }
+
+
+    if (
+        Notification.permission !==
+        "granted"
+    ) {
+        return;
+    }
+
+
+    const now =
+        new Date();
+
+
+    const shownKeys =
+        getShownReminderKeys();
+
+
+    let storageChanged =
+        false;
+
+
+    allTasks.forEach(task => {
+
+        // بدون یادآوری
+        if (!task.reminder_at) {
+            return;
+        }
+
+
+        // کار انجام‌شده دیگر یادآوری نمی‌شود
+        if (
+            task.status ===
+            "انجام شده"
+        ) {
+            return;
+        }
+
+
+        const reminder =
+            parseReminderDate(
+                task.reminder_at
+            );
+
+
+        if (!reminder) {
+            return;
+        }
+
+
+        const key =
+            getReminderNotificationKey(
+                task
+            );
+
+
+        // قبلاً اعلان داده شده
+        if (
+            shownKeys.has(key)
+        ) {
+            return;
+        }
+
+
+        const difference =
+            now.getTime() -
+            reminder.getTime();
+
+
+        /*
+         * فقط در بازه ۵ ثانیه‌ای اطراف زمان مقرر
+         * اعلان ارسال می‌شود.
+         *
+         * این کار باعث می‌شود اگر سایت تازه باز شد
+         * یا مرورگر زمان‌سنج را کمی عقب انداخت،
+         * اعلان اشتباهی برای یادآوری خیلی قدیمی
+         * ارسال نشود.
+         */
+        if (
+            difference >= 0 &&
+            difference <= 5000
+        ) {
+
+            showTaskReminderNotification(
+                task
+            );
+
+            shownKeys.add(key);
+
+            storageChanged = true;
+        }
+
+    });
+
+
+    if (storageChanged) {
+
+        saveShownReminderKeys(
+            shownKeys
+        );
+    }
+}
+
+
+// -------------------------
+// نمایش Notification
+// -------------------------
+
+function showTaskReminderNotification(
+    task
+) {
+
+    if (
+        !("Notification" in window)
+    ) {
+        return;
+    }
+
+
+    if (
+        Notification.permission !==
+        "granted"
+    ) {
+        return;
+    }
+
+
+    const title =
+        "🔔 یادآوری کار";
+
+
+    const body =
+        task.title ||
+        "یک کار برایت یادآوری شده است.";
+
+
+    try {
+
+        const notification =
+            new Notification(
+                title,
+                {
+                    body: body,
+
+                    // اگر favicon وجود داشته باشد استفاده می‌شود.
+                    icon:
+                        "/static/favicon.ico",
+
+                    // باعث می‌شود اعلان مربوط
+                    // به همان یادآوری شناخته شود.
+                    tag:
+                        getReminderNotificationKey(
+                            task
+                        ),
+
+                    // اعلان قبلی را دوباره به‌عنوان
+                    // اعلان جدید تکرار نمی‌کنیم.
+                    renotify: false
+                }
+            );
+
+
+        notification.onclick =
+            function () {
+
+                window.focus();
+
+                notification.close();
+
+
+                const taskElement =
+                    document.querySelector(
+                        `[data-task-id="${task.id}"]`
+                    );
+
+
+                if (taskElement) {
+
+                    taskElement.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+                }
+            };
+
+
+    } catch (error) {
+
+        console.error(
+            "Notification error:",
+            error
+        );
+    }
 }

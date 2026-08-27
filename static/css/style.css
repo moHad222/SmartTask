@@ -31,7 +31,8 @@
     --danger: #9a5b55;
     --danger-light: #f3e4e1;
 
-    --shadow: 0 8px 28px rgba(75, 59, 45, 0.07);
+    --shadow:
+        0 8px 28px rgba(75, 59, 45, 0.07);
 }
 
 
@@ -40,16 +41,25 @@
 ========================= */
 
 body {
-    font-family: Tahoma, Arial, sans-serif;
+    font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
+
     direction: rtl;
-    background: var(--cream-bg);
-    color: var(--text);
+
+    background:
+        var(--cream-bg);
+
+    color:
+        var(--text);
+
     min-height: 100vh;
 
     cursor: default;
 }
 
-/* متن‌ها و عناصر غیرقابل کلیک */
+
 h1,
 h2,
 h3,
@@ -91,68 +101,100 @@ label,
 
 .topbar {
     width: 100%;
-    padding: 18px 6%;
 
-    background: rgba(255, 253, 248, 0.97);
-    border-bottom: 1px solid var(--border);
+    padding:
+        18px 6%;
+
+    background:
+        rgba(255, 253, 248, 0.97);
+
+    border-bottom:
+        1px solid var(--border);
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
+
     gap: 20px;
 }
 
 .brand {
     display: flex;
+
     align-items: center;
+
     gap: 13px;
 }
 
 .brand-icon {
     width: 46px;
     height: 46px;
+
     border-radius: 13px;
 
-    background: var(--olive);
-    color: white;
+    background:
+        var(--olive);
+
+    color:
+        white;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     font-size: 23px;
+
     font-weight: bold;
 
-    box-shadow: 0 5px 15px rgba(104, 115, 75, 0.2);
+    box-shadow:
+        0 5px 15px
+        rgba(104, 115, 75, 0.2);
 
     cursor: default;
 }
 
 .brand h1 {
     font-size: 23px;
-    color: var(--brown-dark);
+
+    color:
+        var(--brown-dark);
+
     margin-bottom: 3px;
 }
 
 .brand p {
-    color: var(--brown-light);
+    color:
+        var(--brown-light);
+
     font-size: 12px;
 }
 
 .user-area {
     display: flex;
+
     align-items: center;
+
     gap: 9px;
 }
 
 .user-box {
-    padding: 9px 14px;
+    padding:
+        9px 14px;
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 11px;
 
-    color: var(--brown);
-    background: var(--cream-card);
+    color:
+        var(--brown);
+
+    background:
+        var(--cream-card);
 
     font-size: 13px;
 
@@ -164,26 +206,35 @@ label,
 }
 
 .header-button {
-    padding: 9px 15px;
+    padding:
+        9px 15px;
 
     border-radius: 10px;
 
-    background: var(--olive-light);
-    color: var(--olive-dark);
+    background:
+        var(--olive-light);
+
+    color:
+        var(--olive-dark);
 
     cursor: pointer;
 
     font-family: inherit;
+
     font-size: 13px;
 }
 
 .header-button:hover {
-    background: #dce3cd;
+    background:
+        #dce3cd;
 }
 
 .logout-button {
-    background: var(--danger-light);
-    color: var(--danger);
+    background:
+        var(--danger-light);
+
+    color:
+        var(--danger);
 }
 
 
@@ -192,8 +243,11 @@ label,
 ========================= */
 
 .container {
-    width: min(1180px, 92%);
-    margin: 32px auto 55px;
+    width:
+        min(1180px, 92%);
+
+    margin:
+        32px auto 55px;
 }
 
 
@@ -203,32 +257,44 @@ label,
 
 .welcome {
     position: relative;
+
     overflow: hidden;
 
     min-height: 205px;
 
-    padding: 25px 28px;
+    padding:
+        25px 28px;
+
     margin-bottom: 22px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
-    background: var(--olive);
-    color: var(--cream-light);
+    background:
+        var(--olive);
+
+    color:
+        var(--cream-light);
 
     border-radius: 20px;
 
-    box-shadow: 0 10px 25px rgba(75, 82, 52, 0.13);
+    box-shadow:
+        0 10px 25px
+        rgba(75, 82, 52, 0.13);
 
     cursor: default;
 }
 
 .welcome-content {
     flex: 1;
+
     min-width: 0;
 
     position: relative;
+
     z-index: 3;
 }
 
@@ -237,40 +303,53 @@ label,
     display: inline-block;
 
     font-size: 11px;
+
     font-weight: bold;
 
-    color: #d9dfc9;
+    color:
+        #d9dfc9;
 
     margin-bottom: 7px;
 }
 
 .welcome h2 {
     font-size: 28px;
+
     margin-bottom: 8px;
 }
 
 .welcome p {
-    color: #edf0e5;
+    color:
+        #edf0e5;
 
     font-size: 14px;
+
     line-height: 1.9;
 }
 
 .welcome-line {
     display: flex;
+
     align-items: center;
+
     gap: 8px;
 
     margin-top: 15px;
 
-    color: #dce3cf;
+    color:
+        #dce3cf;
+
     font-size: 12px;
 }
 
 .welcome-line span {
     width: 25px;
+
     height: 2px;
-    background: #d3dcc1;
+
+    background:
+        #d3dcc1;
+
     display: block;
 }
 
@@ -283,15 +362,19 @@ label,
     position: relative;
 
     width: 430px;
+
     height: 205px;
 
-    flex: 0 0 430px;
+    flex:
+        0 0 430px;
 
     margin-left: -70px;
 
     overflow: hidden;
 
-    background: transparent;
+    background:
+        transparent;
+
     z-index: 1;
 
     cursor: default;
@@ -301,25 +384,30 @@ label,
     position: absolute;
 
     top: 0;
+
     right: 0;
 
     width: 100%;
+
     height: 100%;
 
     display: block;
 
     object-fit: cover;
 
-    transform: scale(1.08);
+    transform:
+        scale(1.08);
 
     cursor: default;
 }
 
 .image-overlay {
     position: absolute;
+
     inset: 0;
 
     pointer-events: none;
+
     z-index: 2;
 
     background:
@@ -343,33 +431,42 @@ label,
 
 .dashboard {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
     gap: 14px;
+
     margin-bottom: 22px;
 }
 
 .stat-card {
-    background: var(--cream-card);
+    background:
+        var(--cream-card);
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 16px;
 
     padding: 18px;
 
     display: flex;
+
     align-items: center;
+
     gap: 13px;
 
     min-height: 98px;
 
     cursor: default;
 
-    /* بدون افکت Hover */
     transition: none;
 }
 
 .stat-card:hover {
     transform: none;
+
     box-shadow: none;
 }
 
@@ -379,6 +476,7 @@ label,
 
 .stat-icon {
     width: 44px;
+
     height: 44px;
 
     flex-shrink: 0;
@@ -386,7 +484,9 @@ label,
     border-radius: 12px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     font-size: 19px;
@@ -395,35 +495,53 @@ label,
 }
 
 .stat-icon.olive {
-    background: var(--olive-light);
-    color: var(--olive-dark);
+    background:
+        var(--olive-light);
+
+    color:
+        var(--olive-dark);
 }
 
 .stat-icon.brown {
-    background: var(--sand-light);
-    color: var(--brown);
+    background:
+        var(--sand-light);
+
+    color:
+        var(--brown);
 }
 
 .stat-icon.green {
-    background: var(--green-light);
-    color: var(--green);
+    background:
+        var(--green-light);
+
+    color:
+        var(--green);
 }
 
 .stat-icon.cream {
-    background: #eee7da;
-    color: var(--brown);
+    background:
+        #eee7da;
+
+    color:
+        var(--brown);
 }
 
 .stat-card span {
     display: block;
-    color: var(--muted);
+
+    color:
+        var(--muted);
+
     font-size: 12px;
+
     margin-bottom: 5px;
 }
 
 .stat-card strong {
     font-size: 25px;
-    color: var(--brown-dark);
+
+    color:
+        var(--brown-dark);
 }
 
 
@@ -433,12 +551,16 @@ label,
 
 .task-section,
 .reminder-section {
-    background: var(--cream-card);
+    background:
+        var(--cream-card);
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 20px;
 
     padding: 23px;
+
     margin-bottom: 22px;
 }
 
@@ -447,20 +569,25 @@ label,
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     gap: 20px;
+
     margin-bottom: 18px;
 }
 
 .section-header h2,
 .section-title h2 {
     font-size: 20px;
-    color: var(--brown-dark);
+
+    color:
+        var(--brown-dark);
 }
 
 .section-label {
-    color: var(--olive);
+    color:
+        var(--olive);
 }
 
 
@@ -470,32 +597,42 @@ label,
 
 button {
     font-family: inherit;
+
     cursor: pointer;
+
     border: none;
 }
 
 .add-button {
-    background: var(--olive);
+    background:
+        var(--olive);
 
     color: white;
 
     border-radius: 10px;
 
-    padding: 11px 17px;
+    padding:
+        11px 17px;
 
     font-size: 13px;
+
     font-weight: bold;
 
-    transition: 0.2s ease;
+    transition:
+        0.2s ease;
 }
 
 .add-button:hover {
-    background: var(--olive-dark);
-    transform: translateY(-1px);
+    background:
+        var(--olive-dark);
+
+    transform:
+        translateY(-1px);
 }
 
 .add-button span {
     font-size: 18px;
+
     margin-left: 4px;
 }
 
@@ -513,11 +650,13 @@ button {
     gap: 9px;
 
     margin-bottom: 20px;
+
     align-items: center;
 }
 
 .search-wrapper {
     position: relative;
+
     width: 100%;
 }
 
@@ -529,15 +668,19 @@ button {
     position: absolute;
 
     right: 13px;
+
     top: 50%;
 
-    transform: translateY(-50%);
+    transform:
+        translateY(-50%);
 
-    color: var(--brown-light);
+    color:
+        var(--brown-light);
 
     font-size: 19px;
 
     pointer-events: none;
+
     z-index: 2;
 
     cursor: default;
@@ -550,11 +693,16 @@ select {
 
     font-family: inherit;
 
-    border: 1px solid #d9cdbd;
+    border:
+        1px solid #d9cdbd;
+
     border-radius: 10px;
 
-    background: #fffefa;
-    color: var(--text);
+    background:
+        #fffefa;
+
+    color:
+        var(--text);
 
     outline: none;
 
@@ -572,25 +720,31 @@ select {
 input,
 select {
     height: 44px;
-    padding: 0 12px;
+
+    padding:
+        0 12px;
 }
 
 textarea {
     padding: 11px;
+
     resize: vertical;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-    border-color: var(--olive);
+    border-color:
+        var(--olive);
 
     box-shadow:
-        0 0 0 3px rgba(104, 115, 75, 0.1);
+        0 0 0 3px
+        rgba(104, 115, 75, 0.1);
 }
 
 ::placeholder {
-    color: #a18f81;
+    color:
+        #a18f81;
 }
 
 
@@ -600,27 +754,36 @@ select:focus {
 
 .task-list {
     display: flex;
+
     flex-direction: column;
+
     gap: 12px;
 }
 
 .task-card {
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
 
     border-radius: 15px;
 
     padding: 18px;
 
-    background: #fffefa;
+    background:
+        #fffefa;
 
-    transition: 0.2s ease;
+    transition:
+        0.2s ease;
 
     cursor: default;
 }
 
 .task-card:hover {
-    border-color: #c8b9a7;
-    box-shadow: 0 7px 20px rgba(83, 65, 50, 0.05);
+    border-color:
+        #c8b9a7;
+
+    box-shadow:
+        0 7px 20px
+        rgba(83, 65, 50, 0.05);
 }
 
 .task-card * {
@@ -631,19 +794,24 @@ select:focus {
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     gap: 15px;
+
     margin-bottom: 9px;
 }
 
 .task-title-row h3 {
     font-size: 16px;
-    color: var(--brown-dark);
+
+    color:
+        var(--brown-dark);
 }
 
 .task-description {
-    color: #786c62;
+    color:
+        #786c62;
 
     font-size: 13px;
 
@@ -656,8 +824,11 @@ select:focus {
 
 .task-meta {
     display: flex;
+
     flex-wrap: wrap;
+
     gap: 7px;
+
     margin-bottom: 14px;
 }
 
@@ -667,29 +838,40 @@ select:focus {
 ========================= */
 
 .status-badge {
-    padding: 5px 9px;
+    padding:
+        5px 9px;
 
     border-radius: 18px;
 
     font-size: 11px;
+
     white-space: nowrap;
 
     cursor: default;
 }
 
 .status-pending {
-    background: #f2e9dc;
-    color: #866846;
+    background:
+        #f2e9dc;
+
+    color:
+        #866846;
 }
 
 .status-progress {
-    background: var(--sand-light);
-    color: var(--brown);
+    background:
+        var(--sand-light);
+
+    color:
+        var(--brown);
 }
 
 .status-completed {
-    background: var(--green-light);
-    color: var(--green);
+    background:
+        var(--green-light);
+
+    color:
+        var(--green);
 }
 
 
@@ -698,13 +880,17 @@ select:focus {
 ========================= */
 
 .task-meta span {
-    background: #f5f0e8;
+    background:
+        #f5f0e8;
 
-    border: 1px solid #e9ded1;
+    border:
+        1px solid #e9ded1;
 
-    color: #796b61;
+    color:
+        #796b61;
 
-    padding: 6px 9px;
+    padding:
+        6px 9px;
 
     border-radius: 8px;
 
@@ -720,29 +906,43 @@ select:focus {
 
 .task-actions {
     display: flex;
+
     gap: 7px;
+
     flex-wrap: wrap;
 }
 
 .task-actions button {
-    padding: 8px 12px;
+    padding:
+        8px 12px;
+
     border-radius: 8px;
+
     font-size: 11px;
 }
 
 .status-task-button {
-    background: var(--olive-light);
-    color: var(--olive-dark);
+    background:
+        var(--olive-light);
+
+    color:
+        var(--olive-dark);
 }
 
 .edit-task-button {
-    background: var(--sand-light);
-    color: var(--brown);
+    background:
+        var(--sand-light);
+
+    color:
+        var(--brown);
 }
 
 .delete-task-button {
-    background: var(--danger-light);
-    color: var(--danger);
+    background:
+        var(--danger-light);
+
+    color:
+        var(--danger);
 }
 
 .task-actions button:hover {
@@ -755,32 +955,52 @@ select:focus {
 ========================= */
 
 .reminder-section {
-    border-color: #ded4c7;
-    background: #faf7f0;
+    border-color:
+        #ded4c7;
+
+    background:
+        #faf7f0;
 }
 
 .reminder-message {
-    color: var(--muted);
-    font-size: 12px;
+    min-height: 18px;
+
+    color:
+        var(--muted);
+
+    font-size: 11px;
+
+    text-align: left;
+
+    transition:
+        opacity 0.2s ease;
 }
 
 .reminder-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
     gap: 11px;
 }
 
 .reminder-card {
     display: flex;
+
     align-items: center;
+
     gap: 11px;
 
     padding: 14px;
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 13px;
 
-    background: #fffefa;
+    background:
+        #fffefa;
 
     cursor: default;
 }
@@ -791,17 +1011,23 @@ select:focus {
 
 .reminder-icon {
     width: 40px;
+
     height: 40px;
 
     flex-shrink: 0;
 
     border-radius: 11px;
 
-    background: var(--olive-light);
-    color: var(--olive-dark);
+    background:
+        var(--olive-light);
+
+    color:
+        var(--olive-dark);
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     font-size: 17px;
@@ -811,29 +1037,40 @@ select:focus {
 
 .reminder-info {
     display: flex;
+
     flex-direction: column;
+
     gap: 4px;
 }
 
 .reminder-info strong {
     font-size: 13px;
-    color: var(--brown-dark);
+
+    color:
+        var(--brown-dark);
 }
 
 .reminder-info span {
     font-size: 11px;
-    color: var(--muted);
+
+    color:
+        var(--muted);
 }
 
 .no-reminders {
     padding: 24px;
+
     text-align: center;
-    color: var(--muted);
+
+    color:
+        var(--muted);
 }
 
 .no-reminders span {
     display: block;
+
     font-size: 28px;
+
     margin-bottom: 7px;
 }
 
@@ -848,19 +1085,28 @@ select:focus {
 
 .empty-state {
     text-align: center;
-    padding: 50px 20px;
-    color: var(--muted);
+
+    padding:
+        50px 20px;
+
+    color:
+        var(--muted);
 }
 
 .empty-icon {
     font-size: 40px;
+
     margin-bottom: 11px;
+
     opacity: 0.75;
 }
 
 .empty-state h3 {
-    color: var(--brown-dark);
+    color:
+        var(--brown-dark);
+
     margin-bottom: 7px;
+
     font-size: 17px;
 }
 
@@ -877,18 +1123,22 @@ select:focus {
     display: none;
 
     position: fixed;
+
     inset: 0;
 
-    background: rgba(55, 47, 38, 0.52);
+    background:
+        rgba(55, 47, 38, 0.52);
 
     z-index: 1000;
 
     align-items: center;
+
     justify-content: center;
 
     padding: 20px;
 
-    backdrop-filter: blur(4px);
+    backdrop-filter:
+        blur(4px);
 }
 
 .modal.active {
@@ -896,62 +1146,85 @@ select:focus {
 }
 
 .modal-content {
-    width: min(560px, 100%);
+    width:
+        min(560px, 100%);
+
     max-height: 90vh;
 
     overflow-y: auto;
 
-    background: var(--cream-card);
+    background:
+        var(--cream-card);
 
     border-radius: 20px;
 
     padding: 24px;
 
     box-shadow:
-        0 25px 70px rgba(50, 40, 30, 0.18);
+        0 25px 70px
+        rgba(50, 40, 30, 0.18);
 
-    animation: modalIn 0.2s ease;
+    animation:
+        modalIn 0.2s ease;
 }
 
 @keyframes modalIn {
+
     from {
         opacity: 0;
-        transform: translateY(10px) scale(0.98);
+
+        transform:
+            translateY(10px)
+            scale(0.98);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+
+        transform:
+            translateY(0)
+            scale(1);
     }
 }
 
 .modal-header {
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
+
     margin-bottom: 23px;
 }
 
 .modal-header h2 {
     font-size: 20px;
-    color: var(--brown-dark);
+
+    color:
+        var(--brown-dark);
 }
 
 .close-button {
     width: 37px;
+
     height: 37px;
 
     border-radius: 9px;
 
-    background: #eee8de;
-    color: var(--brown);
+    background:
+        #eee8de;
+
+    color:
+        var(--brown);
 
     font-size: 23px;
+
     line-height: 1;
 }
 
 .close-button:hover {
-    background: #e4dbce;
+    background:
+        #e4dbce;
 }
 
 
@@ -969,9 +1242,11 @@ select:focus {
     margin-bottom: 7px;
 
     font-size: 12px;
+
     font-weight: bold;
 
-    color: var(--brown-dark);
+    color:
+        var(--brown-dark);
 }
 
 .form-group small {
@@ -979,12 +1254,15 @@ select:focus {
 
     margin-top: 5px;
 
-    color: #9a897c;
+    color:
+        #9a897c;
+
     font-size: 10px;
 }
 
 .ai-category-section {
-    margin: 19px 0;
+    margin:
+        19px 0;
 }
 
 .ai-button {
@@ -994,15 +1272,20 @@ select:focus {
 
     border-radius: 10px;
 
-    background: var(--olive-light);
-    color: var(--olive-dark);
+    background:
+        var(--olive-light);
+
+    color:
+        var(--olive-dark);
 
     font-weight: bold;
+
     font-size: 12px;
 }
 
 .ai-button:hover {
-    background: #dce3cf;
+    background:
+        #dce3cf;
 }
 
 .category-result {
@@ -1012,20 +1295,27 @@ select:focus {
 
     border-radius: 9px;
 
-    background: #edf0e5;
-    color: var(--olive-dark);
+    background:
+        #edf0e5;
+
+    color:
+        var(--olive-dark);
 
     font-size: 12px;
+
     text-align: center;
 }
 
 .hidden {
-    display: none !important;
+    display:
+        none !important;
 }
 
 .form-actions {
     display: flex;
+
     gap: 9px;
+
     margin-top: 23px;
 }
 
@@ -1040,25 +1330,34 @@ select:focus {
     font-family: inherit;
 
     font-weight: bold;
+
     font-size: 12px;
 }
 
 .submit-button {
-    background: var(--olive);
-    color: white;
+    background:
+        var(--olive);
+
+    color:
+        white;
 }
 
 .submit-button:hover {
-    background: var(--olive-dark);
+    background:
+        var(--olive-dark);
 }
 
 .cancel-button {
-    background: #eee9e1;
-    color: var(--brown);
+    background:
+        #eee9e1;
+
+    color:
+        var(--brown);
 }
 
 .cancel-button:hover {
-    background: #e3dbd0;
+    background:
+        #e3dbd0;
 }
 
 
@@ -1067,16 +1366,19 @@ select:focus {
 ========================= */
 
 .auth-modal-content {
-    width: min(460px, 100%);
+    width:
+        min(460px, 100%);
 }
 
 .auth-tabs {
     display: flex;
 
     gap: 7px;
+
     margin-bottom: 21px;
 
-    background: #eee9e0;
+    background:
+        #eee9e0;
 
     padding: 5px;
 
@@ -1086,33 +1388,40 @@ select:focus {
 .auth-tab {
     flex: 1;
 
-    background: transparent;
+    background:
+        transparent;
 
     padding: 9px;
 
     border-radius: 8px;
 
-    color: var(--muted);
+    color:
+        var(--muted);
 
     cursor: pointer;
 }
 
 .auth-tab.active {
-    background: var(--cream-card);
+    background:
+        var(--cream-card);
 
-    color: var(--olive-dark);
+    color:
+        var(--olive-dark);
 
     box-shadow:
-        0 2px 7px rgba(70, 60, 45, 0.06);
+        0 2px 7px
+        rgba(70, 60, 45, 0.06);
 }
 
 .auth-form {
     display: flex;
+
     flex-direction: column;
 }
 
 .auth-submit {
     width: 100%;
+
     margin-top: 7px;
 }
 
@@ -1123,13 +1432,16 @@ select:focus {
 
     padding: 10px;
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
 
     border-radius: 9px;
 
-    background: var(--cream-card);
+    background:
+        var(--cream-card);
 
-    color: var(--brown);
+    color:
+        var(--brown);
 
     font-family: inherit;
 
@@ -1137,21 +1449,25 @@ select:focus {
 }
 
 .guest-button:hover {
-    background: #f5f0e8;
+    background:
+        #f5f0e8;
 }
 
 .auth-message {
     min-height: 20px;
 
-    margin: 4px 0 7px;
+    margin:
+        4px 0 7px;
 
     font-size: 12px;
 
-    color: var(--danger);
+    color:
+        var(--danger);
 }
 
 .auth-message.success {
-    color: var(--green);
+    color:
+        var(--green);
 }
 
 
@@ -1162,24 +1478,30 @@ select:focus {
 @media (max-width: 900px) {
 
     .dashboard {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
     .filters {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
     .search-wrapper {
-        grid-column: 1 / -1;
+        grid-column:
+            1 / -1;
     }
 
     .reminder-list {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
 
     .welcome-image {
         width: 350px;
+
         flex-basis: 350px;
+
         margin-left: -50px;
     }
 }
@@ -1189,6 +1511,7 @@ select:focus {
 
     .user-area {
         flex-direction: column;
+
         align-items: stretch;
     }
 
@@ -1205,11 +1528,13 @@ select:focus {
 @media (max-width: 600px) {
 
     .topbar {
-        padding: 17px 4%;
+        padding:
+            17px 4%;
     }
 
     .container {
         width: 94%;
+
         margin-top: 19px;
     }
 
@@ -1230,20 +1555,24 @@ select:focus {
     }
 
     .welcome-image {
-        width: calc(100% + 44px);
+        width:
+            calc(100% + 44px);
 
         height: 145px;
 
         flex-basis: 145px;
 
         margin-right: -22px;
+
         margin-left: -22px;
 
-        border-radius: 0 0 15px 15px;
+        border-radius:
+            0 0 15px 15px;
     }
 
     .welcome-image img {
-        transform: scale(1.03);
+        transform:
+            scale(1.03);
     }
 
     .image-overlay {
@@ -1259,11 +1588,13 @@ select:focus {
     }
 
     .dashboard {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
 
     .filters {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
 
     .search-wrapper {
@@ -1271,8 +1602,11 @@ select:focus {
     }
 
     .section-header {
-        align-items: flex-start;
-        flex-direction: column;
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
     }
 
     .add-button {
@@ -1280,8 +1614,11 @@ select:focus {
     }
 
     .task-title-row {
-        align-items: flex-start;
-        flex-direction: column;
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
     }
 
     .modal-content {
@@ -1289,319 +1626,22 @@ select:focus {
     }
 
     .form-actions {
-        flex-direction: column;
-    }
-}
-
-/* =========================
-   JALALI DATE PICKER
-========================= */
-
-.date-picker-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.date-input-display {
-    width: 100%;
-    height: 44px;
-
-    padding: 0 12px;
-
-    border: 1px solid #d9cdbd;
-    border-radius: 10px;
-
-    background: #fffefa;
-    color: var(--text);
-
-    font-family: inherit;
-    font-size: 13px;
-
-    cursor: pointer;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    transition:
-        border-color 0.2s,
-        box-shadow 0.2s;
-}
-
-.date-input-display:hover {
-    border-color: #c8b9a7;
-}
-
-.date-input-display.active {
-    border-color: var(--olive);
-
-    box-shadow:
-        0 0 0 3px rgba(104, 115, 75, 0.1);
-}
-
-.date-input-placeholder {
-    color: #a18f81;
-}
-
-.date-input-value {
-    color: var(--text);
-}
-
-.date-input-icon {
-    color: var(--brown-light);
-    font-size: 17px;
-}
-
-
-/* Calendar */
-
-.jalali-calendar {
-    position: absolute;
-
-    top: calc(100% + 8px);
-    right: 0;
-
-    width: 315px;
-
-    background: var(--cream-card);
-
-    border: 1px solid var(--border);
-    border-radius: 16px;
-
-    padding: 14px;
-
-    box-shadow:
-        0 18px 45px rgba(65, 52, 40, 0.14);
-
-    z-index: 1100;
-
-    display: none;
-
-    animation: calendarIn 0.16s ease;
-}
-
-.jalali-calendar.active {
-    display: block;
-}
-
-@keyframes calendarIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
+        flex-direction:
+            column;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+    .section-title {
+        align-items:
+            flex-start;
 
+        flex-direction:
+            column;
 
-/* Calendar Header */
-
-.calendar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    margin-bottom: 14px;
-}
-
-.calendar-month-year {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    gap: 2px;
-}
-
-.calendar-month {
-    color: var(--brown-dark);
-
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.calendar-year {
-    color: var(--muted);
-
-    font-size: 10px;
-}
-
-.calendar-nav {
-    width: 32px;
-    height: 32px;
-
-    border-radius: 9px;
-
-    background: #f1ebe2;
-    color: var(--brown);
-
-    font-size: 17px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    cursor: pointer;
-
-    transition: 0.15s ease;
-}
-
-.calendar-nav:hover {
-    background: var(--olive-light);
-    color: var(--olive-dark);
-}
-
-
-/* Weekdays */
-
-.calendar-weekdays {
-    display: grid;
-
-    grid-template-columns: repeat(7, 1fr);
-
-    gap: 3px;
-
-    margin-bottom: 5px;
-}
-
-.calendar-weekday {
-    height: 30px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: var(--muted);
-
-    font-size: 10px;
-    font-weight: bold;
-
-    cursor: default;
-}
-
-
-/* Days */
-
-.calendar-days {
-    display: grid;
-
-    grid-template-columns: repeat(7, 1fr);
-
-    gap: 3px;
-}
-
-.calendar-day {
-    height: 36px;
-
-    border-radius: 9px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: var(--text);
-
-    font-size: 11px;
-
-    cursor: pointer;
-
-    transition:
-        background 0.15s ease,
-        color 0.15s ease;
-}
-
-.calendar-day:hover {
-    background: var(--olive-light);
-    color: var(--olive-dark);
-}
-
-.calendar-day.other-month {
-    color: #c8bdb0;
-}
-
-.calendar-day.today {
-    border: 1px solid var(--olive);
-
-    color: var(--olive-dark);
-    font-weight: bold;
-}
-
-.calendar-day.selected {
-    background: var(--olive);
-    color: white;
-
-    font-weight: bold;
-}
-
-.calendar-day.today.selected {
-    border-color: var(--olive-dark);
-}
-
-
-/* Calendar Footer */
-
-.calendar-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    margin-top: 12px;
-    padding-top: 10px;
-
-    border-top: 1px solid var(--border);
-}
-
-.calendar-today-button {
-    background: transparent;
-
-    color: var(--olive-dark);
-
-    font-family: inherit;
-    font-size: 11px;
-
-    cursor: pointer;
-
-    padding: 5px 7px;
-
-    border-radius: 7px;
-}
-
-.calendar-today-button:hover {
-    background: var(--olive-light);
-}
-
-.calendar-clear-button {
-    background: transparent;
-
-    color: var(--danger);
-
-    font-family: inherit;
-    font-size: 11px;
-
-    cursor: pointer;
-
-    padding: 5px 7px;
-
-    border-radius: 7px;
-}
-
-.calendar-clear-button:hover {
-    background: var(--danger-light);
-}
-
-
-/* Mobile */
-
-@media (max-width: 600px) {
-
-    .jalali-calendar {
-        width: 100%;
-        min-width: 280px;
+        gap: 8px;
     }
 
-    .calendar-day {
-        height: 38px;
+    .reminder-message {
+        text-align:
+            right;
     }
 }
