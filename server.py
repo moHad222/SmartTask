@@ -261,21 +261,21 @@ def validate_task_data(data):
 
         return (
             None,
-            "عنوان Task الزامی است."
+            "عنوان الزامی است"
         )
 
     if priority not in PRIORITIES:
 
         return (
             None,
-            "اولویت نامعتبر است."
+            "اولویت نامعتبر است"
         )
 
     if category not in CATEGORIES:
 
         return (
             None,
-            "دسته‌بندی نامعتبر است."
+            "دسته‌بندی نامعتبر است"
         )
 
     return {
@@ -863,7 +863,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
                     self,
                     {
                         "error":
-                            "عنوان Task خالی است."
+                            "عنوان خالی است"
                     },
                     400,
                     session_id
@@ -1008,7 +1008,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                     {
                         "error":
-                            "شناسه Task ارسال نشده است."
+                            "شناسه‌ی کار ارسال نشده است"
                     },
 
                     400,
@@ -1068,7 +1068,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                         {
                             "error":
-                                "Task پیدا نشد."
+                                "کار مد نظر پیدا نشد"
                         },
 
                         404,
@@ -1129,7 +1129,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                     {
                         "error":
-                            "شناسه یا وضعیت Task ارسال نشده است."
+                            "شناسه یا وضعیت کار ارسال نشده است"
                     },
 
                     400,
@@ -1157,7 +1157,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                         {
                             "error":
-                                "Task یا وضعیت نامعتبر است."
+                                "کار یا وضعیت نامعتبر است"
                         },
 
                         400,
@@ -1217,7 +1217,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                     {
                         "error":
-                            "شناسه Task ارسال نشده است."
+                            "شناسه‌ی کار ارسال نشده است"
                     },
 
                     400,
@@ -1243,7 +1243,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                         {
                             "error":
-                                "Task پیدا نشد."
+                                "کار مد نظر پیدا نشد"
                         },
 
                         404,
