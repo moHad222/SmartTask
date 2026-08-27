@@ -31,7 +31,6 @@ from ai.model import predict_category
 # =========================================================
 
 BASE_DIR = Path(__file__).resolve().parent
-
 DEFAULT_PORT = 8000
 
 
@@ -39,7 +38,7 @@ DEFAULT_PORT = 8000
 # DATABASE
 # =========================================================
 
-# DATABASE_URL توسط محیط Liara تأمین می‌شود.
+# آدرس دیتابیس در محیط Liara از طریق DATABASE_URL تأمین می‌شود.
 init_db()
 
 
@@ -55,12 +54,13 @@ SESSIONS = {}
 # =========================================================
 
 def send_json(handler, data, status=200, session_id=None):
+    """ارسال پاسخ JSON به کلاینت."""
 
     response = json.dumps(
-    data,
-    ensure_ascii=False,
-    default=str
-).encode("utf-8")
+        data,
+        ensure_ascii=False,
+        default=str
+    ).encode("utf-8")
 
     handler.send_response(status)
 
@@ -84,27 +84,21 @@ def send_json(handler, data, status=200, session_id=None):
         )
 
     handler.end_headers()
-
     handler.wfile.write(response)
 
 
 def read_json(handler):
+    """خواندن اطلاعات JSON ارسال‌شده از فرانت‌اند."""
 
     try:
-
         content_length = int(
-            handler.headers.get(
-                "Content-Length",
-                0
-            )
+            handler.headers.get("Content-Length", 0)
         )
 
         if content_length <= 0:
             return {}
 
-        body = handler.rfile.read(
-            content_length
-        )
+        body = handler.rfile.read(content_length)
 
         if not body:
             return {}
@@ -122,6 +116,7 @@ def read_json(handler):
 # =========================================================
 
 def get_cookie_session(handler):
+    """دریافت شناسه نشست از Cookie."""
 
     cookie_header = handler.headers.get(
         "Cookie",
@@ -135,7 +130,6 @@ def get_cookie_session(handler):
 
     try:
         cookie.load(cookie_header)
-
     except Exception:
         return None
 
@@ -145,11 +139,8 @@ def get_cookie_session(handler):
     return cookie["session_id"].value
 
 
-def create_session(
-    user_id,
-    username,
-    is_guest=False
-):
+def create_session(user_id, username, is_guest=False):
+    """ساخت نشست جدید برای کاربر."""
 
     session_id = secrets.token_urlsafe(32)
 
@@ -163,20 +154,19 @@ def create_session(
 
 
 def get_current_session(handler):
+    """
+    دریافت نشست فعلی.
+    اگر نشست معتبر وجود نداشته باشد،
+    یک کاربر مهمان جدید ساخته می‌شود.
+    """
 
     session_id = get_cookie_session(handler)
 
     if session_id:
-
-        session = SESSIONS.get(
-            session_id
-        )
+        session = SESSIONS.get(session_id)
 
         if session:
             return session_id, session
-
-    # اگر Session وجود نداشت،
-    # یک کاربر مهمان جدید ساخته می‌شود.
 
     guest = create_guest_user()
 
@@ -191,92 +181,55 @@ def get_current_session(handler):
         True
     )
 
-    return (
-        session_id,
-        SESSIONS[session_id]
-    )
+    return session_id, SESSIONS[session_id]
 
 
 # =========================================================
-# TASK VALIDATION
+# کار VALIDATION
 # =========================================================
 
 def validate_task_data(data):
+    """اعتبارسنجی اطلاعات یک کار."""
 
     title = str(
-        data.get(
-            "title",
-            ""
-        )
+        data.get("title", "")
     ).strip()
 
     description = str(
-        data.get(
-            "description",
-            ""
-        )
+        data.get("description", "")
     ).strip()
 
     priority = str(
-        data.get(
-            "priority",
-            "معمولی"
-        )
+        data.get("priority", "معمولی")
     ).strip()
 
     category = str(
-        data.get(
-            "category",
-            "تعیین نشده"
-        )
+        data.get("category", "تعیین نشده")
     ).strip()
 
-    due_date = data.get(
-        "due_date"
-    )
-
-    reminder_at = data.get(
-        "reminder_at"
-    )
+    due_date = data.get("due_date")
+    reminder_at = data.get("reminder_at")
 
     if due_date is not None:
-
-        due_date = str(
-            due_date
-        ).strip()
+        due_date = str(due_date).strip()
 
         if not due_date:
             due_date = None
 
     if reminder_at is not None:
-
-        reminder_at = str(
-            reminder_at
-        ).strip()
+        reminder_at = str(reminder_at).strip()
 
         if not reminder_at:
             reminder_at = None
 
     if not title:
-
-        return (
-            None,
-            "عنوان الزامی است"
-        )
+        return None, "عنوان کار الزامی است"
 
     if priority not in PRIORITIES:
-
-        return (
-            None,
-            "اولویت نامعتبر است"
-        )
+        return None, "اولویت کار نامعتبر است"
 
     if category not in CATEGORIES:
-
-        return (
-            None,
-            "دسته‌بندی نامعتبر است"
-        )
+        return None, "دسته‌بندی کار نامعتبر است"
 
     return {
         "title": title,
@@ -299,36 +252,25 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
     # =====================================================
 
     def translate_path(self, path):
+        """تعیین مسیر فایل‌های HTML و استاتیک."""
 
         parsed = urlparse(path)
-
         clean_path = parsed.path
 
-        # صفحه اصلی
         if clean_path == "/":
-
             return str(
-                BASE_DIR /
-                "templates" /
-                "index.html"
+                BASE_DIR / "templates" / "index.html"
             )
 
-        # فایل‌های استاتیک
         if clean_path.startswith("/static/"):
-
-            relative_path = clean_path[
-                len("/static/"):
-            ]
+            relative_path = clean_path[len("/static/"):]
 
             return str(
-                BASE_DIR /
-                "static" /
-                relative_path
+                BASE_DIR / "static" / relative_path
             )
 
         return str(
-            BASE_DIR /
-            clean_path.lstrip("/")
+            BASE_DIR / clean_path.lstrip("/")
         )
 
     # =====================================================
@@ -337,38 +279,25 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
 
-        parsed = urlparse(
-            self.path
-        )
-
+        parsed = urlparse(self.path)
         path = parsed.path
 
-        print(
-            f"GET {path}"
-        )
+        print(f"GET {path}")
 
         # -------------------------------------------------
         # SESSION
         # -------------------------------------------------
 
         try:
-
-            session_id, session = (
-                get_current_session(self)
-            )
+            session_id, session = get_current_session(self)
 
         except Exception as e:
 
-            print(
-                "SESSION ERROR:",
-                e
-            )
+            print("SESSION ERROR:", e)
 
             send_json(
                 self,
-                {
-                    "error": str(e)
-                },
+                {"error": str(e)},
                 500
             )
 
@@ -382,38 +311,29 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
             send_json(
                 self,
-
                 {
-                    "logged_in":
-                        not session["is_guest"],
-
-                    "is_guest":
-                        session["is_guest"],
-
-                    "user_id":
-                        session["user_id"],
-
-                    "username":
+                    "logged_in": not session["is_guest"],
+                    "is_guest": session["is_guest"],
+                    "user_id": session["user_id"],
+                    "username": (
                         "مهمان"
                         if session["is_guest"]
                         else session["username"]
+                    )
                 },
-
                 200,
-
                 session_id
             )
 
             return
 
         # -------------------------------------------------
-        # TASKS
+        # کارها
         # -------------------------------------------------
 
         if path == "/api/tasks":
 
             try:
-
                 tasks = get_all_tasks(
                     session["user_id"]
                 )
@@ -427,16 +347,11 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
             except Exception as e:
 
-                print(
-                    "GET TASKS ERROR:",
-                    e
-                )
+                print("GET کارها ERROR:", e)
 
                 send_json(
                     self,
-                    {
-                        "error": str(e)
-                    },
+                    {"error": str(e)},
                     500,
                     session_id
                 )
@@ -450,7 +365,6 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
         if path == "/api/categories":
 
             try:
-
                 categories = get_categories()
 
                 send_json(
@@ -462,16 +376,11 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
             except Exception as e:
 
-                print(
-                    "GET CATEGORIES ERROR:",
-                    e
-                )
+                print("GET CATEGORIES ERROR:", e)
 
                 send_json(
                     self,
-                    {
-                        "error": str(e)
-                    },
+                    {"error": str(e)},
                     500,
                     session_id
                 )
@@ -486,15 +395,12 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
             send_json(
                 self,
-
                 {
                     "categories": CATEGORIES,
                     "priorities": PRIORITIES,
                     "statuses": STATUSES
                 },
-
                 200,
-
                 session_id
             )
 
@@ -512,19 +418,12 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
 
-        parsed = urlparse(
-            self.path
-        )
-
+        parsed = urlparse(self.path)
         path = parsed.path
 
-        print(
-            f"POST {path}"
-        )
+        print(f"POST {path}")
 
-        data = read_json(
-            self
-        )
+        data = read_json(self)
 
         # =================================================
         # REGISTER
@@ -533,36 +432,25 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
         if path == "/api/register":
 
             username = str(
-                data.get(
-                    "username",
-                    ""
-                )
+                data.get("username", "")
             ).strip()
 
             password = str(
-                data.get(
-                    "password",
-                    ""
-                )
+                data.get("password", "")
             )
 
             try:
-
                 user_id, error = create_user(
                     username,
                     password
                 )
 
                 if error:
-
                     send_json(
                         self,
-                        {
-                            "error": error
-                        },
+                        {"error": error},
                         400
                     )
-
                     return
 
                 session_id = create_session(
@@ -573,29 +461,21 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                 send_json(
                     self,
-
                     {
                         "success": True,
                         "username": username
                     },
-
                     201,
-
                     session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "REGISTER ERROR:",
-                    e
-                )
+                print("REGISTER ERROR:", e)
 
                 send_json(
                     self,
-                    {
-                        "error": str(e)
-                    },
+                    {"error": str(e)},
                     500
                 )
 
@@ -608,17 +488,11 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
         if path == "/api/login":
 
             username = str(
-                data.get(
-                    "username",
-                    ""
-                )
+                data.get("username", "")
             ).strip()
 
             password = str(
-                data.get(
-                    "password",
-                    ""
-                )
+                data.get("password", "")
             )
 
             if not username or not password:
@@ -635,7 +509,6 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
                 return
 
             try:
-
                 user = authenticate_user(
                     username,
                     password
@@ -662,30 +535,21 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                 send_json(
                     self,
-
                     {
                         "success": True,
-                        "username":
-                            user["username"]
+                        "username": user["username"]
                     },
-
                     200,
-
                     session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "LOGIN ERROR:",
-                    e
-                )
+                print("LOGIN ERROR:", e)
 
                 send_json(
                     self,
-                    {
-                        "error": str(e)
-                    },
+                    {"error": str(e)},
                     500
                 )
 
@@ -698,7 +562,6 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
         if path == "/api/guest":
 
             try:
-
                 guest = create_guest_user()
 
                 if not guest:
@@ -722,30 +585,22 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                 send_json(
                     self,
-
                     {
                         "success": True,
                         "username": "مهمان",
                         "is_guest": True
                     },
-
                     200,
-
                     session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "GUEST ERROR:",
-                    e
-                )
+                print("GUEST ERROR:", e)
 
                 send_json(
                     self,
-                    {
-                        "error": str(e)
-                    },
+                    {"error": str(e)},
                     500
                 )
 
@@ -757,19 +612,15 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
         if path == "/api/logout":
 
-            old_session_id = (
-                get_cookie_session(self)
-            )
+            old_session_id = get_cookie_session(self)
 
             if old_session_id:
-
                 SESSIONS.pop(
                     old_session_id,
                     None
                 )
 
             try:
-
                 guest = create_guest_user()
 
                 if not guest:
@@ -793,30 +644,22 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                 send_json(
                     self,
-
                     {
                         "success": True,
                         "username": "مهمان",
                         "is_guest": True
                     },
-
                     200,
-
                     new_session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "LOGOUT ERROR:",
-                    e
-                )
+                print("LOGOUT ERROR:", e)
 
                 send_json(
                     self,
-                    {
-                        "error": str(e)
-                    },
+                    {"error": str(e)},
                     500
                 )
 
@@ -827,18 +670,13 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
         # =================================================
 
         try:
-
-            session_id, session = (
-                get_current_session(self)
-            )
+            session_id, session = get_current_session(self)
 
         except Exception as e:
 
             send_json(
                 self,
-                {
-                    "error": str(e)
-                },
+                {"error": str(e)},
                 500
             )
 
@@ -851,20 +689,14 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
         if path == "/api/predict":
 
             title = str(
-                data.get(
-                    "title",
-                    ""
-                )
+                data.get("title", "")
             ).strip()
 
             if not title:
 
                 send_json(
                     self,
-                    {
-                        "error":
-                            "عنوان خالی است"
-                    },
+                    {"error": "عنوان کار خالی است"},
                     400,
                     session_id
                 )
@@ -872,61 +704,41 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
                 return
 
             try:
-
-                category = predict_category(
-                    title
-                )
+                category = predict_category(title)
 
                 send_json(
                     self,
-
-                    {
-                        "category": category
-                    },
-
+                    {"category": category},
                     200,
-
                     session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "AI ERROR:",
-                    e
-                )
+                print("AI ERROR:", e)
 
                 send_json(
                     self,
-
-                    {
-                        "error": str(e)
-                    },
-
+                    {"error": str(e)},
                     500,
-
                     session_id
                 )
 
             return
 
         # =================================================
-        # CREATE TASK
+        # ایجاد کار
         # =================================================
 
         if path == "/api/tasks":
 
-            task_data, error = (
-                validate_task_data(data)
-            )
+            task_data, error = validate_task_data(data)
 
             if error:
 
                 send_json(
                     self,
-                    {
-                        "error": error
-                    },
+                    {"error": error},
                     400,
                     session_id
                 )
@@ -934,101 +746,68 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
                 return
 
             try:
-
                 task_id = create_task(
-
                     user_id=session["user_id"],
-
                     title=task_data["title"],
-
-                    description=
-                        task_data["description"],
-
-                    priority=
-                        task_data["priority"],
-
-                    category=
-                        task_data["category"],
-
-                    due_date=
-                        task_data["due_date"],
-
-                    reminder_at=
-                        task_data["reminder_at"]
+                    description=task_data["description"],
+                    priority=task_data["priority"],
+                    category=task_data["category"],
+                    due_date=task_data["due_date"],
+                    reminder_at=task_data["reminder_at"]
                 )
 
                 send_json(
                     self,
-
                     {
                         "success": True,
                         "task_id": task_id
                     },
-
                     201,
-
                     session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "CREATE TASK ERROR:",
-                    e
-                )
+                print("CREATE کار ERROR:", e)
 
                 send_json(
                     self,
-
-                    {
-                        "error": str(e)
-                    },
-
+                    {"error": str(e)},
                     500,
-
                     session_id
                 )
 
             return
 
         # =================================================
-        # UPDATE TASK
+        # ویرایش کار
         # =================================================
 
         if path == "/api/tasks/update":
 
-            task_id = data.get(
-                "task_id"
-            )
+            task_id = data.get("task_id")
 
             if not task_id:
 
                 send_json(
                     self,
-
                     {
                         "error":
                             "شناسه‌ی کار ارسال نشده است"
                     },
-
                     400,
-
                     session_id
                 )
 
                 return
 
-            task_data, error = (
-                validate_task_data(data)
-            )
+            task_data, error = validate_task_data(data)
 
             if error:
 
                 send_json(
                     self,
-                    {
-                        "error": error
-                    },
+                    {"error": error},
                     400,
                     session_id
                 )
@@ -1036,43 +815,26 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
                 return
 
             try:
-
                 updated = update_task(
-
                     task_id=int(task_id),
-
                     user_id=session["user_id"],
-
                     title=task_data["title"],
-
-                    description=
-                        task_data["description"],
-
-                    priority=
-                        task_data["priority"],
-
-                    category=
-                        task_data["category"],
-
-                    due_date=
-                        task_data["due_date"],
-
-                    reminder_at=
-                        task_data["reminder_at"]
+                    description=task_data["description"],
+                    priority=task_data["priority"],
+                    category=task_data["category"],
+                    due_date=task_data["due_date"],
+                    reminder_at=task_data["reminder_at"]
                 )
 
                 if not updated:
 
                     send_json(
                         self,
-
                         {
                             "error":
-                                "کار مد نظر پیدا نشد"
+                                "کار موردنظر پیدا نشد"
                         },
-
                         404,
-
                         session_id
                     )
 
@@ -1080,73 +842,51 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                 send_json(
                     self,
-                    {
-                        "success": True
-                    },
+                    {"success": True},
                     200,
                     session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "UPDATE TASK ERROR:",
-                    e
-                )
+                print("UPDATE کار ERROR:", e)
 
                 send_json(
                     self,
-
-                    {
-                        "error": str(e)
-                    },
-
+                    {"error": str(e)},
                     500,
-
                     session_id
                 )
 
             return
 
         # =================================================
-        # UPDATE STATUS
+        # تغییر وضعیت کار
         # =================================================
 
         if path == "/api/tasks/status":
 
-            task_id = data.get(
-                "task_id"
-            )
-
-            status = data.get(
-                "status"
-            )
+            task_id = data.get("task_id")
+            status = data.get("status")
 
             if not task_id or not status:
 
                 send_json(
                     self,
-
                     {
                         "error":
                             "شناسه یا وضعیت کار ارسال نشده است"
                     },
-
                     400,
-
                     session_id
                 )
 
                 return
 
             try:
-
                 updated = update_task_status(
-
                     int(task_id),
-
                     session["user_id"],
-
                     status
                 )
 
@@ -1154,14 +894,11 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                     send_json(
                         self,
-
                         {
                             "error":
                                 "کار یا وضعیت نامعتبر است"
                         },
-
                         400,
-
                         session_id
                     )
 
@@ -1169,70 +906,49 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                 send_json(
                     self,
-
-                    {
-                        "success": True
-                    },
-
+                    {"success": True},
                     200,
-
                     session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "UPDATE STATUS ERROR:",
-                    e
-                )
+                print("UPDATE STATUS ERROR:", e)
 
                 send_json(
                     self,
-
-                    {
-                        "error": str(e)
-                    },
-
+                    {"error": str(e)},
                     500,
-
                     session_id
                 )
 
             return
 
         # =================================================
-        # DELETE TASK
+        # حذف کار
         # =================================================
 
         if path == "/api/tasks/delete":
 
-            task_id = data.get(
-                "task_id"
-            )
+            task_id = data.get("task_id")
 
             if not task_id:
 
                 send_json(
                     self,
-
                     {
                         "error":
                             "شناسه‌ی کار ارسال نشده است"
                     },
-
                     400,
-
                     session_id
                 )
 
                 return
 
             try:
-
                 deleted = delete_task(
-
                     int(task_id),
-
                     session["user_id"]
                 )
 
@@ -1240,14 +956,11 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                     send_json(
                         self,
-
                         {
                             "error":
-                                "کار مد نظر پیدا نشد"
+                                "کار موردنظر پیدا نشد"
                         },
-
                         404,
-
                         session_id
                     )
 
@@ -1255,32 +968,19 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                 send_json(
                     self,
-
-                    {
-                        "success": True
-                    },
-
+                    {"success": True},
                     200,
-
                     session_id
                 )
 
             except Exception as e:
 
-                print(
-                    "DELETE ERROR:",
-                    e
-                )
+                print("DELETE کار ERROR:", e)
 
                 send_json(
                     self,
-
-                    {
-                        "error": str(e)
-                    },
-
+                    {"error": str(e)},
                     500,
-
                     session_id
                 )
 
@@ -1292,14 +992,11 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
         send_json(
             self,
-
             {
                 "error":
-                    "API endpoint پیدا نشد."
+                    "مسیر API پیدا نشد."
             },
-
             404,
-
             session_id
         )
 
@@ -1343,15 +1040,12 @@ def run_server():
     print("=" * 40)
 
     try:
-
         server.serve_forever()
 
     except KeyboardInterrupt:
-
         print("\nServer stopped.")
 
     finally:
-
         server.server_close()
 
 

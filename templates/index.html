@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> مدیریت کارها</title>
+    <title>مدیریت کارها</title>
 
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
@@ -29,7 +29,11 @@
             <span id="currentUsername">کاربر مهمان</span>
         </div>
 
-        <button type="button" id="loginButton" class="header-button">
+        <button
+            type="button"
+            id="loginButton"
+            class="header-button"
+        >
             ورود
         </button>
 
@@ -48,7 +52,7 @@
 
 <main class="container">
 
-    <!-- خوش آمدگویی -->
+    <!-- خوش‌آمدگویی -->
     <section class="welcome">
 
         <div class="welcome-content">
@@ -126,12 +130,17 @@
 
 
     <!-- یادآوری -->
-    <section class="reminder-section" id="reminderSection">
+    <section
+        class="reminder-section"
+        id="reminderSection"
+    >
 
         <div class="section-title">
 
             <div>
-                <span class="section-label">یادآوری</span>
+                <span class="section-label">
+                    یادآوری
+                </span>
 
                 <h2>
                     کارهایی که نباید فراموش کنی
@@ -145,12 +154,15 @@
 
         </div>
 
-        <div id="reminderList" class="reminder-list"></div>
+        <div
+            id="reminderList"
+            class="reminder-list"
+        ></div>
 
     </section>
 
 
-    <!-- کارها -->
+    <!-- فهرست کارها -->
     <section class="task-section">
 
         <div class="section-header">
@@ -215,9 +227,14 @@
         </div>
 
 
-        <div id="taskList" class="task-list">
+        <!-- فهرست کارها -->
+        <div
+            id="taskList"
+            class="task-list"
+        >
 
             <div class="empty-state">
+
                 <div class="empty-icon">📋</div>
 
                 <h3>
@@ -227,6 +244,7 @@
                 <p>
                     اولین کارت رو ایجاد کن تا مدیریت روزت رو شروع کنیم.
                 </p>
+
             </div>
 
         </div>
@@ -237,15 +255,23 @@
 
 
 <!-- مودال کار -->
-<div id="taskModal" class="modal">
+<div
+    id="taskModal"
+    class="modal"
+>
 
     <div class="modal-content">
 
         <div class="modal-header">
 
             <div>
-                <span class="section-label">کار جدید</span>
-                <h2>افزودن کار</h2>
+                <span class="section-label">
+                    کار جدید
+                </span>
+
+                <h2>
+                    افزودن کار
+                </h2>
             </div>
 
             <button
@@ -262,7 +288,10 @@
         <form id="taskForm">
 
             <div class="form-group">
-                <label for="title">عنوان کار</label>
+
+                <label for="title">
+                    عنوان کار
+                </label>
 
                 <input
                     type="text"
@@ -271,11 +300,15 @@
                     placeholder="مثلاً تحویل پروژه دانشگاه"
                     required
                 >
+
             </div>
 
 
             <div class="form-group">
-                <label for="description">توضیحات</label>
+
+                <label for="description">
+                    توضیحات
+                </label>
 
                 <textarea
                     id="description"
@@ -283,29 +316,44 @@
                     rows="4"
                     placeholder="اگر توضیح بیشتری لازم است اینجا بنویس..."
                 ></textarea>
+
             </div>
 
 
             <div class="form-group">
-                <label for="priority">اولویت</label>
 
-                <select id="priority" name="priority"></select>
+                <label for="priority">
+                    اولویت
+                </label>
+
+                <select
+                    id="priority"
+                    name="priority"
+                ></select>
+
             </div>
 
 
             <div class="form-group">
-                <label for="dueDate">تاریخ سررسید</label>
+
+                <label for="dueDate">
+                    تاریخ سررسید
+                </label>
 
                 <input
                     type="date"
                     id="dueDate"
                     name="dueDate"
                 >
+
             </div>
 
 
             <div class="form-group">
-                <label for="reminderAt">زمان یادآوری</label>
+
+                <label for="reminderAt">
+                    زمان یادآوری
+                </label>
 
                 <input
                     type="datetime-local"
@@ -316,9 +364,11 @@
                 <small>
                     اگر نیازی به یادآوری نداری، این قسمت را خالی بگذار.
                 </small>
+
             </div>
 
 
+            <!-- تشخیص هوشمند دسته‌بندی -->
             <div class="ai-category-section">
 
                 <button
@@ -363,8 +413,11 @@
 </div>
 
 
-<!-- مودال ورود -->
-<div id="authModal" class="modal">
+<!-- مودال ورود و ثبت‌نام -->
+<div
+    id="authModal"
+    class="modal"
+>
 
     <div class="modal-content auth-modal-content">
 
@@ -391,6 +444,7 @@
         </div>
 
 
+        <!-- تب‌های ورود و ثبت‌نام -->
         <div class="auth-tabs">
 
             <button
@@ -413,9 +467,13 @@
 
 
         <!-- ورود -->
-        <form id="loginForm" class="auth-form">
+        <form
+            id="loginForm"
+            class="auth-form"
+        >
 
             <div class="form-group">
+
                 <label for="loginUsername">
                     نام کاربری
                 </label>
@@ -427,10 +485,12 @@
                     placeholder="نام کاربری"
                     required
                 >
+
             </div>
 
 
             <div class="form-group">
+
                 <label for="loginPassword">
                     رمز عبور
                 </label>
@@ -442,6 +502,7 @@
                     placeholder="رمز عبور"
                     required
                 >
+
             </div>
 
 
@@ -470,13 +531,14 @@
         </form>
 
 
-        <!-- ثبت نام -->
+        <!-- ثبت‌نام -->
         <form
             id="registerForm"
             class="auth-form hidden"
         >
 
             <div class="form-group">
+
                 <label for="registerUsername">
                     نام کاربری
                 </label>
@@ -488,10 +550,12 @@
                     placeholder="حداقل ۳ کاراکتر"
                     required
                 >
+
             </div>
 
 
             <div class="form-group">
+
                 <label for="registerPassword">
                     رمز عبور
                 </label>
@@ -503,10 +567,12 @@
                     placeholder="حداقل ۴ کاراکتر"
                     required
                 >
+
             </div>
 
 
             <div class="form-group">
+
                 <label for="registerPasswordRepeat">
                     تکرار رمز عبور
                 </label>
@@ -518,6 +584,7 @@
                     placeholder="رمز عبور را دوباره وارد کن"
                     required
                 >
+
             </div>
 
 
