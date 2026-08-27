@@ -985,21 +985,40 @@ function resetTaskForm() {
 // =========================
 // LOAD TASKS
 // =========================
-
 async function loadTasks() {
 
     const response =
         await fetch("/api/tasks");
 
-    if (!response.ok) {
+    let data = null;
+
+    try {
+
+        data = await response.json();
+
+    } catch (error) {
 
         throw new Error(
-            "دریافت کارها ناموفق بود."
+            `سرور پاسخ JSON معتبر برنگرداند. کد خطا: ${response.status}`
         );
     }
 
-    allTasks =
-        await response.json();
+    if (!response.ok) {
+
+        throw new Error(
+            data?.error ||
+            `دریافت کارها ناموفق بود. کد خطا: ${response.status}`
+        );
+    }
+
+    if (!Array.isArray(data)) {
+
+        throw new Error(
+            "پاسخ سرور برای کارها معتبر نیست."
+        );
+    }
+
+    allTasks = data;
 
     renderTasks(allTasks);
 
@@ -1007,11 +1026,8 @@ async function loadTasks() {
 
     renderReminders(allTasks);
 
-    // بعد از دریافت کارهای جدید،
-    // یادآوری‌ها را هم دوباره بررسی کن.
     checkRemindersNow();
 }
-
 
 // =========================
 // RENDER TASKS
