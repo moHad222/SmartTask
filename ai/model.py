@@ -15,7 +15,7 @@ VECTORIZER_PATH = BASE_DIR / "task_vectorizer.pkl"
 
 
 # =========================================================
-# MODEL
+# LOAD MODEL
 # =========================================================
 
 _model = None
@@ -29,23 +29,32 @@ def load_model():
 
     if _model is None or _vectorizer is None:
 
-        _model = joblib.load(MODEL_PATH)
-        _vectorizer = joblib.load(VECTORIZER_PATH)
+        if not MODEL_PATH.exists():
+            raise FileNotFoundError(
+                "فایل مدل AI پیدا نشد."
+            )
 
-        # سازگاری LogisticRegression
-        # با نسخه‌های جدید scikit-learn
-        if hasattr(_model, "solver"):
+        if not VECTORIZER_PATH.exists():
+            raise FileNotFoundError(
+                "فایل Vectorizer پیدا نشد."
+            )
 
-            if not hasattr(_model, "multi_class"):
+        _model = joblib.load(
+            MODEL_PATH
+        )
 
-                _model.multi_class = "auto"
+        _vectorizer = joblib.load(
+            VECTORIZER_PATH
+        )
+
+
 # =========================================================
 # NORMALIZE
 # =========================================================
 
 def normalize_text(text):
 
-    text = str(text or "").lower().strip()
+    text = str(text).lower().strip()
 
     replacements = {
         "ي": "ی",
@@ -56,13 +65,17 @@ def normalize_text(text):
     }
 
     for old, new in replacements.items():
-        text = text.replace(old, new)
+
+        text = text.replace(
+            old,
+            new
+        )
 
     return text
 
 
 # =========================================================
-# PREDICT
+# PREDICT CATEGORY
 # =========================================================
 
 def predict_category(title):
@@ -74,50 +87,38 @@ def predict_category(title):
 
     load_model()
 
-    # -----------------------------------------------------
-    # VECTORIZE
-    # -----------------------------------------------------
+    vector = _vectorizer.transform(
+        [text]
+    )
 
-    vector = _vectorizer.transform([text])
+    probabilities = _model.predict_proba(
+        vector
+    )[0]
 
-    # -----------------------------------------------------
-    # PREDICT
-    # -----------------------------------------------------
+    best_index = probabilities.argmax()
 
-    category = _model.predict(vector)[0]
+    confidence = probabilities[
+        best_index
+    ]
 
-    # -----------------------------------------------------
-    # CONFIDENCE
-    # -----------------------------------------------------
-
-    confidence = None
-
-    if hasattr(_model, "predict_proba"):
-
-        probabilities = _model.predict_proba(vector)[0]
-
-        best_index = probabilities.argmax()
-
-        category = _model.classes_[best_index]
-
-        confidence = probabilities[best_index]
+    category = _model.classes_[
+        best_index
+    ]
 
     # -----------------------------------------------------
-    # VALID CATEGORY
+    # اگر مدل اطمینان کافی نداشت
+    # -----------------------------------------------------
+
+    if confidence < 0.35:
+
+        return "تعیین نشده"
+
+    # -----------------------------------------------------
+    # فقط دسته‌های معتبر پروژه
     # -----------------------------------------------------
 
     if category not in CATEGORIES:
 
         return "تعیین نشده"
-
-    # -----------------------------------------------------
-    # CONFIDENCE THRESHOLD
-    # -----------------------------------------------------
-
-    if confidence is not None:
-
-        if confidence < 0.35:
-
-            return "تعیین نشده"
 
     return category
