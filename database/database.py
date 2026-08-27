@@ -50,6 +50,7 @@ GUEST_USERNAME = "مهمان"
 def get_connection():
 
     if not DATABASE_URL:
+
         raise RuntimeError(
             "DATABASE_URL تنظیم نشده است."
         )
@@ -148,7 +149,6 @@ def init_db():
                 )
             """)
 
-
             # =================================================
             # CATEGORIES
             # =================================================
@@ -164,7 +164,6 @@ def init_db():
                         DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-
 
             # =================================================
             # TASKS
@@ -206,7 +205,6 @@ def init_db():
                 )
             """)
 
-
             # =================================================
             # DEFAULT CATEGORIES
             # =================================================
@@ -218,7 +216,6 @@ def init_db():
                     VALUES (%s)
                     ON CONFLICT (name) DO NOTHING
                 """, (category,))
-
 
             # =================================================
             # GUEST USER
@@ -232,7 +229,6 @@ def init_db():
             """, (GUEST_USERNAME,))
 
             guest = cursor.fetchone()
-
 
             if not guest:
 
@@ -248,7 +244,6 @@ def init_db():
                         secrets.token_urlsafe(32)
                     )
                 ))
-
 
         conn.commit()
 
@@ -281,9 +276,7 @@ def get_guest_user():
                 LIMIT 1
             """)
 
-            row = cursor.fetchone()
-
-            return row
+            return cursor.fetchone()
 
     finally:
 
@@ -326,7 +319,6 @@ def create_guest_user():
     finally:
 
         conn.close()
-
 
     return {
         "id": user_id,
@@ -373,14 +365,12 @@ def create_user(
         password or ""
     )
 
-
     if not username:
 
         return (
             None,
             "نام کاربری الزامی است."
         )
-
 
     if len(username) < 3:
 
@@ -389,14 +379,12 @@ def create_user(
             "نام کاربری باید حداقل ۳ کاراکتر باشد."
         )
 
-
     if len(username) > 30:
 
         return (
             None,
             "نام کاربری نباید بیشتر از ۳۰ کاراکتر باشد."
         )
-
 
     if username == GUEST_USERNAME:
 
@@ -405,7 +393,6 @@ def create_user(
             "این نام کاربری قابل استفاده نیست."
         )
 
-
     if not password:
 
         return (
@@ -413,14 +400,12 @@ def create_user(
             "رمز عبور الزامی است."
         )
 
-
     if len(password) < 4:
 
         return (
             None,
             "رمز عبور باید حداقل ۴ کاراکتر باشد."
         )
-
 
     existing = get_user_by_username(
         username
@@ -432,7 +417,6 @@ def create_user(
             None,
             "این نام کاربری قبلاً ثبت شده است."
         )
-
 
     conn = get_connection()
 
@@ -462,7 +446,6 @@ def create_user(
 
         conn.close()
 
-
     return user_id, None
 
 
@@ -479,21 +462,17 @@ def authenticate_user(
         password or ""
     )
 
-
     user = get_user_by_username(
         username
     )
-
 
     if not user:
 
         return None
 
-
     if username == GUEST_USERNAME:
 
         return None
-
 
     if not verify_password(
         password,
@@ -501,7 +480,6 @@ def authenticate_user(
     ):
 
         return None
-
 
     return user
 
@@ -526,9 +504,7 @@ def get_categories():
                 ORDER BY id
             """)
 
-            rows = cursor.fetchall()
-
-            return rows
+            return cursor.fetchall()
 
     finally:
 
@@ -542,7 +518,6 @@ def get_category_id(
     if not category_name:
 
         return None
-
 
     conn = get_connection()
 
@@ -578,7 +553,7 @@ def create_task(
     title,
     description="",
     priority="معمولی",
-    category="دانشگاه",
+    category="تعیین نشده",
     due_date=None,
     reminder_at=None
 ):
@@ -587,16 +562,13 @@ def create_task(
 
         priority = "معمولی"
 
-
     if category not in CATEGORIES:
 
         category = "تعیین نشده"
 
-
     category_id = get_category_id(
         category
     )
-
 
     conn = get_connection()
 
@@ -608,19 +580,12 @@ def create_task(
                 INSERT INTO tasks (
 
                     user_id,
-
                     category_id,
-
                     title,
-
                     description,
-
                     priority,
-
                     status,
-
                     due_date,
-
                     reminder_at
 
                 )
@@ -638,19 +603,12 @@ def create_task(
             """, (
 
                 user_id,
-
                 category_id,
-
                 title,
-
                 description,
-
                 priority,
-
                 "انجام نشده",
-
                 due_date,
-
                 reminder_at
 
             ))
@@ -664,7 +622,6 @@ def create_task(
     finally:
 
         conn.close()
-
 
     return task_id
 
@@ -687,21 +644,13 @@ def get_all_tasks(
                 SELECT
 
                     tasks.id,
-
                     tasks.user_id,
-
                     tasks.title,
-
                     tasks.description,
-
                     tasks.priority,
-
                     tasks.status,
-
                     tasks.created_at,
-
                     tasks.due_date,
-
                     tasks.reminder_at,
 
                     categories.name AS category
@@ -715,12 +664,9 @@ def get_all_tasks(
                 WHERE tasks.user_id = %s
 
                 ORDER BY tasks.id DESC
-
             """, (user_id,))
 
-            rows = cursor.fetchall()
-
-            return rows
+            return cursor.fetchall()
 
     finally:
 
@@ -748,21 +694,13 @@ def get_task(
                     SELECT
 
                         tasks.id,
-
                         tasks.user_id,
-
                         tasks.title,
-
                         tasks.description,
-
                         tasks.priority,
-
                         tasks.status,
-
                         tasks.created_at,
-
                         tasks.due_date,
-
                         tasks.reminder_at,
 
                         categories.name AS category
@@ -774,7 +712,6 @@ def get_task(
                            categories.id
 
                     WHERE tasks.id = %s
-
                 """, (task_id,))
 
             else:
@@ -783,21 +720,13 @@ def get_task(
                     SELECT
 
                         tasks.id,
-
                         tasks.user_id,
-
                         tasks.title,
-
                         tasks.description,
-
                         tasks.priority,
-
                         tasks.status,
-
                         tasks.created_at,
-
                         tasks.due_date,
-
                         tasks.reminder_at,
 
                         categories.name AS category
@@ -809,9 +738,7 @@ def get_task(
                            categories.id
 
                     WHERE tasks.id = %s
-
                     AND tasks.user_id = %s
-
                 """, (
                     task_id,
                     user_id
@@ -843,16 +770,13 @@ def update_task(
 
         priority = "معمولی"
 
-
     if category not in CATEGORIES:
 
         category = "تعیین نشده"
 
-
     category_id = get_category_id(
         category
     )
-
 
     conn = get_connection()
 
@@ -866,37 +790,23 @@ def update_task(
                 SET
 
                     title = %s,
-
                     description = %s,
-
                     priority = %s,
-
                     category_id = %s,
-
                     due_date = %s,
-
                     reminder_at = %s
 
                 WHERE id = %s
-
                 AND user_id = %s
-
             """, (
 
                 title,
-
                 description,
-
                 priority,
-
                 category_id,
-
                 due_date,
-
                 reminder_at,
-
                 task_id,
-
                 user_id
 
             ))
@@ -908,7 +818,6 @@ def update_task(
     finally:
 
         conn.close()
-
 
     return changed > 0
 
@@ -927,7 +836,6 @@ def update_task_status(
 
         return False
 
-
     conn = get_connection()
 
     try:
@@ -940,17 +848,11 @@ def update_task_status(
                 SET status = %s
 
                 WHERE id = %s
-
                 AND user_id = %s
-
             """, (
-
                 status,
-
                 task_id,
-
                 user_id
-
             ))
 
             changed = cursor.rowcount
@@ -960,7 +862,6 @@ def update_task_status(
     finally:
 
         conn.close()
-
 
     return changed > 0
 
@@ -984,9 +885,7 @@ def delete_task(
                 DELETE FROM tasks
 
                 WHERE id = %s
-
                 AND user_id = %s
-
             """, (
                 task_id,
                 user_id
@@ -1000,7 +899,4 @@ def delete_task(
 
         conn.close()
 
-
     return deleted > 0
-
-

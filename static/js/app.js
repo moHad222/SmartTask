@@ -15,9 +15,9 @@ let currentUser = {
 };
 
 
-// =========================
-// REMINDER NOTIFICATIONS
-// =========================
+// =========================================================
+// REMINDER
+// =========================================================
 
 let reminderCheckInterval = null;
 
@@ -26,9 +26,9 @@ const notifiedReminders = new Set();
 const REMINDER_CHECK_INTERVAL = 30 * 1000;
 
 
-// =========================
+// =========================================================
 // HELPERS
-// =========================
+// =========================================================
 
 const $ = id => document.getElementById(id);
 
@@ -44,9 +44,9 @@ function escapeHtml(value) {
 }
 
 
-// =========================
+// =========================================================
 // START
-// =========================
+// =========================================================
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -62,7 +62,6 @@ async function initializeApp() {
 
     updateUserUI();
 
-
     try {
 
         await loadSession();
@@ -74,7 +73,6 @@ async function initializeApp() {
             error
         );
     }
-
 
     try {
 
@@ -88,7 +86,6 @@ async function initializeApp() {
         );
     }
 
-
     try {
 
         await loadTasks();
@@ -101,20 +98,18 @@ async function initializeApp() {
         );
     }
 
-
     startReminderChecker();
 }
 
 
-// =========================
+// =========================================================
 // SESSION
-// =========================
+// =========================================================
 
 async function loadSession() {
 
     const response =
         await fetch("/api/session");
-
 
     if (!response.ok) {
 
@@ -123,10 +118,8 @@ async function loadSession() {
         );
     }
 
-
     currentUser =
         await response.json();
-
 
     updateUserUI();
 }
@@ -138,13 +131,11 @@ function updateUserUI() {
         currentUser.username ||
         "مهمان";
 
-
     if ($("currentUsername")) {
 
         $("currentUsername").textContent =
             username;
     }
-
 
     if ($("welcomeTitle")) {
 
@@ -154,7 +145,6 @@ function updateUserUI() {
                 : `سلام ${username} 👋`;
     }
 
-
     if ($("welcomeText")) {
 
         $("welcomeText").textContent =
@@ -163,12 +153,10 @@ function updateUserUI() {
                 : `${username}، کارهات رو مدیریت کن و چیزی رو فراموش نکن.`;
     }
 
-
     $("loginButton")?.classList.toggle(
         "hidden",
         !currentUser.is_guest
     );
-
 
     $("logoutButton")?.classList.toggle(
         "hidden",
@@ -177,15 +165,14 @@ function updateUserUI() {
 }
 
 
-// =========================
+// =========================================================
 // OPTIONS
-// =========================
+// =========================================================
 
 async function loadOptions() {
 
     const response =
         await fetch("/api/options");
-
 
     if (!response.ok) {
 
@@ -194,10 +181,8 @@ async function loadOptions() {
         );
     }
 
-
     options =
         await response.json();
-
 
     fillSelect(
         $("categoryFilter"),
@@ -205,21 +190,17 @@ async function loadOptions() {
         "همه دسته‌بندی‌ها"
     );
 
-
     fillSelect(
         $("priorityFilter"),
         options.priorities,
         "همه اولویت‌ها"
     );
 
-
     fillSelect(
         $("priority"),
         options.priorities
     );
 
-
-    // وضعیت فیلتر
     fillSelect(
         $("statusFilter"),
         options.statuses,
@@ -238,50 +219,42 @@ function fillSelect(
         return;
     }
 
-
     select.innerHTML = "";
-
 
     if (defaultText !== null) {
 
         const option =
             document.createElement("option");
 
-
         option.value = "";
 
         option.textContent =
             defaultText;
 
-
         select.appendChild(option);
     }
-
 
     if (!Array.isArray(values)) {
         return;
     }
-
 
     values.forEach(value => {
 
         const option =
             document.createElement("option");
 
-
         option.value = value;
 
         option.textContent = value;
-
 
         select.appendChild(option);
     });
 }
 
 
-// =========================
+// =========================================================
 // EVENTS
-// =========================
+// =========================================================
 
 function setupEvents() {
 
@@ -290,30 +263,25 @@ function setupEvents() {
         openCreateModal
     );
 
-
     $("closeTaskModal")?.addEventListener(
         "click",
         closeTaskModal
     );
-
 
     $("cancelTask")?.addEventListener(
         "click",
         closeTaskModal
     );
 
-
     $("taskForm")?.addEventListener(
         "submit",
         handleTaskSubmit
     );
 
-
     $("predictCategory")?.addEventListener(
         "click",
         predictCategory
     );
-
 
     [
         "taskSearch",
@@ -332,68 +300,58 @@ function setupEvents() {
 
     });
 
-
-    // =========================
+    // =====================================================
     // AUTH
-    // =========================
+    // =====================================================
 
     $("loginButton")?.addEventListener(
         "click",
         openAuthModal
     );
 
-
     $("closeAuthModal")?.addEventListener(
         "click",
         closeAuthModal
     );
-
 
     $("loginTab")?.addEventListener(
         "click",
         () => showAuthTab("login")
     );
 
-
     $("registerTab")?.addEventListener(
         "click",
         () => showAuthTab("register")
     );
-
 
     $("loginForm")?.addEventListener(
         "submit",
         loginUser
     );
 
-
     $("registerForm")?.addEventListener(
         "submit",
         registerUser
     );
-
 
     $("guestButton")?.addEventListener(
         "click",
         continueAsGuest
     );
 
-
     $("guestButtonRegister")?.addEventListener(
         "click",
         continueAsGuest
     );
-
 
     $("logoutButton")?.addEventListener(
         "click",
         logoutUser
     );
 
-
-    // =========================
+    // =====================================================
     // MODAL BACKDROP
-    // =========================
+    // =====================================================
 
     $("taskModal")?.addEventListener(
         "click",
@@ -406,10 +364,8 @@ function setupEvents() {
 
                 closeTaskModal();
             }
-
         }
     );
-
 
     $("authModal")?.addEventListener(
         "click",
@@ -422,14 +378,12 @@ function setupEvents() {
 
                 closeAuthModal();
             }
-
         }
     );
 
-
-    // =========================
+    // =====================================================
     // ESCAPE
-    // =========================
+    // =====================================================
 
     document.addEventListener(
         "keydown",
@@ -441,36 +395,31 @@ function setupEvents() {
 
                 closeAuthModal();
             }
-
         }
     );
 }
 
 
-// =========================
+// =========================================================
 // AUTH MODAL
-// =========================
+// =========================================================
 
 function openAuthModal() {
 
     const modal =
         $("authModal");
 
-
     if (!modal) {
         return;
     }
-
 
     showAuthTab("login");
 
     clearAuthMessages();
 
-
     modal.classList.add("active");
 
     modal.style.display = "flex";
-
 
     setTimeout(
         () =>
@@ -485,19 +434,15 @@ function closeAuthModal() {
     const modal =
         $("authModal");
 
-
     if (!modal) {
         return;
     }
-
 
     modal.classList.remove("active");
 
     modal.style.display = "none";
 
-
     clearAuthMessages();
-
 
     $("loginForm")?.reset();
 
@@ -510,30 +455,25 @@ function showAuthTab(tab) {
     const login =
         tab === "login";
 
-
     $("loginTab")?.classList.toggle(
         "active",
         login
     );
-
 
     $("registerTab")?.classList.toggle(
         "active",
         !login
     );
 
-
     $("loginForm")?.classList.toggle(
         "hidden",
         !login
     );
 
-
     $("registerForm")?.classList.toggle(
         "hidden",
         login
     );
-
 
     if ($("authTitle")) {
 
@@ -542,7 +482,6 @@ function showAuthTab(tab) {
                 ? "ورود به حساب"
                 : "ساخت حساب جدید";
     }
-
 
     clearAuthMessages();
 }
@@ -557,11 +496,9 @@ function clearAuthMessages() {
 
         const element = $(id);
 
-
         if (!element) {
             return;
         }
-
 
         element.textContent = "";
 
@@ -580,40 +517,34 @@ function showAuthMessage(
     const element =
         $(elementId);
 
-
     if (!element) {
         return;
     }
 
-
     element.textContent =
         message;
-
 
     element.className =
         `auth-message ${type}`;
 }
 
 
-// =========================
+// =========================================================
 // LOGIN
-// =========================
+// =========================================================
 
 async function loginUser(event) {
 
     event.preventDefault();
-
 
     const username =
         $("loginUsername")
             ?.value
             .trim();
 
-
     const password =
         $("loginPassword")
             ?.value || "";
-
 
     if (!username || !password) {
 
@@ -624,7 +555,6 @@ async function loginUser(event) {
 
         return;
     }
-
 
     try {
 
@@ -646,10 +576,8 @@ async function loginUser(event) {
                 }
             );
 
-
         const data =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -658,7 +586,6 @@ async function loginUser(event) {
                 "ورود انجام نشد."
             );
         }
-
 
         currentUser = {
 
@@ -670,21 +597,17 @@ async function loginUser(event) {
             is_guest: false
         };
 
-
         updateUserUI();
 
         closeAuthModal();
 
         resetFilters();
 
-
         await loadTasks();
-
 
         alert(
             `سلام ${data.username} 👋 خوش اومدی`
         );
-
 
     } catch (error) {
 
@@ -692,7 +615,6 @@ async function loginUser(event) {
             "Login error:",
             error
         );
-
 
         showAuthMessage(
             "loginMessage",
@@ -702,30 +624,26 @@ async function loginUser(event) {
 }
 
 
-// =========================
+// =========================================================
 // REGISTER
-// =========================
+// =========================================================
 
 async function registerUser(event) {
 
     event.preventDefault();
-
 
     const username =
         $("registerUsername")
             ?.value
             .trim();
 
-
     const password =
         $("registerPassword")
             ?.value || "";
 
-
     const repeatPassword =
         $("registerPasswordRepeat")
             ?.value || "";
-
 
     if (!username || !password) {
 
@@ -736,7 +654,6 @@ async function registerUser(event) {
 
         return;
     }
-
 
     if (
         password !==
@@ -750,7 +667,6 @@ async function registerUser(event) {
 
         return;
     }
-
 
     try {
 
@@ -772,10 +688,8 @@ async function registerUser(event) {
                 }
             );
 
-
         const data =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -784,7 +698,6 @@ async function registerUser(event) {
                 "ثبت‌نام انجام نشد."
             );
         }
-
 
         currentUser = {
 
@@ -796,21 +709,17 @@ async function registerUser(event) {
             is_guest: false
         };
 
-
         updateUserUI();
 
         closeAuthModal();
 
         resetFilters();
 
-
         await loadTasks();
-
 
         alert(
             `حساب ${data.username} ساخته شد 👋 خوش اومدی`
         );
-
 
     } catch (error) {
 
@@ -818,7 +727,6 @@ async function registerUser(event) {
             "Register error:",
             error
         );
-
 
         showAuthMessage(
             "registerMessage",
@@ -828,9 +736,9 @@ async function registerUser(event) {
 }
 
 
-// =========================
+// =========================================================
 // GUEST
-// =========================
+// =========================================================
 
 async function continueAsGuest() {
 
@@ -844,10 +752,8 @@ async function continueAsGuest() {
                 }
             );
 
-
         const data =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -856,7 +762,6 @@ async function continueAsGuest() {
                 "ورود به حالت مهمان انجام نشد."
             );
         }
-
 
         currentUser = {
 
@@ -867,16 +772,13 @@ async function continueAsGuest() {
             is_guest: true
         };
 
-
         updateUserUI();
 
         closeAuthModal();
 
         resetFilters();
 
-
         await loadTasks();
-
 
     } catch (error) {
 
@@ -888,9 +790,9 @@ async function continueAsGuest() {
 }
 
 
-// =========================
+// =========================================================
 // LOGOUT
-// =========================
+// =========================================================
 
 async function logoutUser() {
 
@@ -903,7 +805,6 @@ async function logoutUser() {
         return;
     }
 
-
     try {
 
         const response =
@@ -914,10 +815,8 @@ async function logoutUser() {
                 }
             );
 
-
         const data =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -926,7 +825,6 @@ async function logoutUser() {
                 "خروج انجام نشد."
             );
         }
-
 
         currentUser = {
 
@@ -937,19 +835,15 @@ async function logoutUser() {
             is_guest: true
         };
 
-
         updateUserUI();
 
         resetFilters();
 
-
         await loadTasks();
-
 
         alert(
             "از حساب خارج شدی و اکنون به‌عنوان مهمان هستی."
         );
-
 
     } catch (error) {
 
@@ -961,33 +855,28 @@ async function logoutUser() {
 }
 
 
-// =========================
+// =========================================================
 // TASK MODAL
-// =========================
+// =========================================================
 
 function openCreateModal() {
 
     editingTaskId = null;
 
-
     resetTaskForm();
 
     setModalMode(false);
 
-
     const modal =
         $("taskModal");
-
 
     if (!modal) {
         return;
     }
 
-
     modal.classList.add("active");
 
     modal.style.display = "flex";
-
 
     setTimeout(
         () =>
@@ -1006,7 +895,6 @@ function openEditModal(taskId) {
                 Number(taskId)
         );
 
-
     if (!task) {
 
         alert(
@@ -1016,52 +904,41 @@ function openEditModal(taskId) {
         return;
     }
 
-
     editingTaskId =
         Number(task.id);
 
-
     setModalMode(true);
-
 
     $("title").value =
         task.title || "";
 
-
     $("description").value =
         task.description || "";
-
 
     $("priority").value =
         task.priority ||
         "معمولی";
 
-
     $("dueDate").value =
         task.due_date || "";
-
 
     $("reminderAt").value =
         convertReminderForInput(
             task.reminder_at
         );
 
-
     const result =
         $("categoryResult");
-
 
     if (result) {
 
         result.dataset.category =
             task.category || "";
 
-
         result.textContent =
             task.category
                 ? `دسته‌بندی فعلی: ${task.category}`
                 : "";
-
 
         result.classList.toggle(
             "hidden",
@@ -1069,20 +946,16 @@ function openEditModal(taskId) {
         );
     }
 
-
     const modal =
         $("taskModal");
-
 
     if (!modal) {
         return;
     }
 
-
     modal.classList.add("active");
 
     modal.style.display = "flex";
-
 
     setTimeout(
         () =>
@@ -1097,23 +970,19 @@ function setModalMode(isEdit) {
     const modal =
         $("taskModal");
 
-
     if (!modal) {
         return;
     }
-
 
     const title =
         modal.querySelector(
             ".modal-header h2"
         );
 
-
     const submit =
         modal.querySelector(
             ".submit-button"
         );
-
 
     if (isEdit) {
 
@@ -1123,13 +992,11 @@ function setModalMode(isEdit) {
                 "ویرایش کار";
         }
 
-
         if (submit) {
 
             submit.textContent =
                 "ذخیره تغییرات";
         }
-
 
     } else {
 
@@ -1138,7 +1005,6 @@ function setModalMode(isEdit) {
             title.textContent =
                 "افزودن کار جدید";
         }
-
 
         if (submit) {
 
@@ -1154,23 +1020,18 @@ function closeTaskModal() {
     const modal =
         $("taskModal");
 
-
     if (!modal) {
         return;
     }
-
 
     modal.classList.remove(
         "active"
     );
 
-
     modal.style.display =
         "none";
 
-
     editingTaskId = null;
-
 
     resetTaskForm();
 
@@ -1182,15 +1043,12 @@ function resetTaskForm() {
 
     $("taskForm")?.reset();
 
-
     const result =
         $("categoryResult");
-
 
     if (!result) {
         return;
     }
-
 
     result.textContent = "";
 
@@ -1198,20 +1056,18 @@ function resetTaskForm() {
         "hidden"
     );
 
-
     delete result.dataset.category;
 }
 
 
-// =========================
+// =========================================================
 // LOAD TASKS
-// =========================
+// =========================================================
 
 async function loadTasks() {
 
     const response =
         await fetch("/api/tasks");
-
 
     if (!response.ok) {
 
@@ -1220,10 +1076,8 @@ async function loadTasks() {
         );
     }
 
-
     allTasks =
         await response.json();
-
 
     renderTasks(allTasks);
 
@@ -1231,27 +1085,22 @@ async function loadTasks() {
 
     renderReminders(allTasks);
 
-
-    // بعد از دریافت کارها،
-    // یادآوری‌ها را بلافاصله بررسی کن
     checkRemindersNow();
 }
 
 
-// =========================
+// =========================================================
 // RENDER TASKS
-// =========================
+// =========================================================
 
 function renderTasks(tasks) {
 
     const list =
         $("taskList");
 
-
     if (!list) {
         return;
     }
-
 
     if (!tasks.length) {
 
@@ -1275,23 +1124,18 @@ function renderTasks(tasks) {
             </div>
         `;
 
-
         return;
     }
 
-
     list.innerHTML = "";
-
 
     tasks.forEach(task => {
 
         const card =
             document.createElement("div");
 
-
         card.className =
             "task-card";
-
 
         card.innerHTML = `
 
@@ -1311,25 +1155,20 @@ function renderTasks(tasks) {
 
                 </div>
 
-
                 <p class="task-description">
-
                     ${escapeHtml(
                         task.description || ""
                     )}
-
                 </p>
-
 
                 <div class="task-meta">
 
                     <span>
                         📁 ${escapeHtml(
                             task.category ||
-                            "عمومی"
+                            "تعیین نشده"
                         )}
                     </span>
-
 
                     <span>
                         ⚡ ${escapeHtml(
@@ -1337,7 +1176,6 @@ function renderTasks(tasks) {
                             "معمولی"
                         )}
                     </span>
-
 
                     <span>
                         📅 ${
@@ -1351,19 +1189,19 @@ function renderTasks(tasks) {
                         }
                     </span>
 
-
                     <span>
                         🔔 ${
                             task.reminder_at
-                                ? formatReminder(
-                                    task.reminder_at
+                                ? escapeHtml(
+                                    formatReminder(
+                                        task.reminder_at
+                                    )
                                 )
                                 : "بدون یادآوری"
                         }
                     </span>
 
                 </div>
-
 
                 <div class="task-actions">
 
@@ -1374,14 +1212,12 @@ function renderTasks(tasks) {
                         تغییر وضعیت
                     </button>
 
-
                     <button
                         type="button"
                         class="edit-task-button"
                     >
                         ویرایش
                     </button>
-
 
                     <button
                         type="button"
@@ -1394,7 +1230,6 @@ function renderTasks(tasks) {
 
             </div>
         `;
-
 
         card
             .querySelector(
@@ -1409,7 +1244,6 @@ function renderTasks(tasks) {
                     )
             );
 
-
         card
             .querySelector(
                 ".edit-task-button"
@@ -1422,7 +1256,6 @@ function renderTasks(tasks) {
                     )
             );
 
-
         card
             .querySelector(
                 ".delete-task-button"
@@ -1434,7 +1267,6 @@ function renderTasks(tasks) {
                         task.id
                     )
             );
-
 
         list.appendChild(card);
     });
@@ -1451,7 +1283,6 @@ function getStatusClass(status) {
         return "status-completed";
     }
 
-
     if (
         status ===
         "در حال انجام"
@@ -1460,14 +1291,13 @@ function getStatusClass(status) {
         return "status-progress";
     }
 
-
     return "status-pending";
 }
 
 
-// =========================
+// =========================================================
 // DASHBOARD
-// =========================
+// =========================================================
 
 function updateDashboard(tasks) {
 
@@ -1476,7 +1306,6 @@ function updateDashboard(tasks) {
         $("totalTasks").textContent =
             tasks.length;
     }
-
 
     if ($("inProgressTasks")) {
 
@@ -1488,7 +1317,6 @@ function updateDashboard(tasks) {
             ).length;
     }
 
-
     if ($("completedTasks")) {
 
         $("completedTasks").textContent =
@@ -1498,7 +1326,6 @@ function updateDashboard(tasks) {
                     "انجام شده"
             ).length;
     }
-
 
     if ($("reminderTasks")) {
 
@@ -1510,20 +1337,18 @@ function updateDashboard(tasks) {
 }
 
 
-// =========================
+// =========================================================
 // FORM
-// =========================
+// =========================================================
 
 async function handleTaskSubmit(event) {
 
     event.preventDefault();
 
-
     const title =
         $("title")
             ?.value
             .trim();
-
 
     if (!title) {
 
@@ -1534,14 +1359,11 @@ async function handleTaskSubmit(event) {
         return;
     }
 
-
     const result =
         $("categoryResult");
 
-
     let category =
         result?.dataset.category;
-
 
     if (
         editingTaskId !== null
@@ -1554,22 +1376,18 @@ async function handleTaskSubmit(event) {
                     Number(editingTaskId)
             );
 
-
         category =
             category ||
             oldTask?.category ||
             "تعیین نشده";
-
 
         await updateTask(
             editingTaskId,
             category
         );
 
-
         return;
     }
-
 
     await createTask(
         category ||
@@ -1578,9 +1396,9 @@ async function handleTaskSubmit(event) {
 }
 
 
-// =========================
-// CREATE
-// =========================
+// =========================================================
+// CREATE / UPDATE FORM DATA
+// =========================================================
 
 function getTaskFormData(category) {
 
@@ -1591,29 +1409,33 @@ function getTaskFormData(category) {
                 ?.value
                 .trim() || "",
 
-
         description:
             $("description")
                 ?.value
                 .trim() || "",
-
 
         priority:
             $("priority")
                 ?.value ||
             "معمولی",
 
-
         category,
 
+        // =============================================
+        // IMPORTANT:
+        // input type="date" is already Gregorian.
+        // Do NOT convert it to Jalali here.
+        // =============================================
 
         due_date:
-            normalizeDateToGregorian(
-                $("dueDate")
-                    ?.value ||
-                ""
-            ),
+            $("dueDate")
+                ?.value ||
+            null,
 
+        // =============================================
+        // datetime-local is also sent as Gregorian
+        // local date/time.
+        // =============================================
 
         reminder_at:
             $("reminderAt")
@@ -1622,6 +1444,10 @@ function getTaskFormData(category) {
     };
 }
 
+
+// =========================================================
+// CREATE
+// =========================================================
 
 async function createTask(category) {
 
@@ -1646,10 +1472,8 @@ async function createTask(category) {
                 }
             );
 
-
         const data =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -1659,12 +1483,9 @@ async function createTask(category) {
             );
         }
 
-
         closeTaskModal();
 
-
         await loadTasks();
-
 
     } catch (error) {
 
@@ -1672,7 +1493,6 @@ async function createTask(category) {
             "Create task error:",
             error
         );
-
 
         alert(
             "خطا: " +
@@ -1682,9 +1502,9 @@ async function createTask(category) {
 }
 
 
-// =========================
+// =========================================================
 // UPDATE
-// =========================
+// =========================================================
 
 async function updateTask(
     taskId,
@@ -1701,7 +1521,6 @@ async function updateTask(
                 category
             )
         };
-
 
         const response =
             await fetch(
@@ -1720,10 +1539,8 @@ async function updateTask(
                 }
             );
 
-
         const responseData =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -1733,12 +1550,9 @@ async function updateTask(
             );
         }
 
-
         closeTaskModal();
 
-
         await loadTasks();
-
 
     } catch (error) {
 
@@ -1746,7 +1560,6 @@ async function updateTask(
             "Update task error:",
             error
         );
-
 
         alert(
             "خطا: " +
@@ -1756,9 +1569,9 @@ async function updateTask(
 }
 
 
-// =========================
+// =========================================================
 // AI
-// =========================
+// =========================================================
 
 async function predictCategory() {
 
@@ -1766,7 +1579,6 @@ async function predictCategory() {
         $("title")
             ?.value
             .trim();
-
 
     if (!title) {
 
@@ -1777,11 +1589,9 @@ async function predictCategory() {
         return;
     }
 
-
     showCategoryMessage(
         "در حال پیش‌بینی..."
     );
-
 
     try {
 
@@ -1802,10 +1612,8 @@ async function predictCategory() {
                 }
             );
 
-
         const data =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -1815,23 +1623,22 @@ async function predictCategory() {
             );
         }
 
-
         const result =
             $("categoryResult");
 
+        if (!result) {
+            return;
+        }
 
         result.dataset.category =
             data.category;
 
-
         result.textContent =
             `دسته‌بندی پیشنهادی: ${data.category}`;
-
 
         result.classList.remove(
             "hidden"
         );
-
 
     } catch (error) {
 
@@ -1848,15 +1655,12 @@ function showCategoryMessage(message) {
     const result =
         $("categoryResult");
 
-
     if (!result) {
         return;
     }
 
-
     result.textContent =
         message;
-
 
     result.classList.remove(
         "hidden"
@@ -1864,9 +1668,9 @@ function showCategoryMessage(message) {
 }
 
 
-// =========================
+// =========================================================
 // STATUS
-// =========================
+// =========================================================
 
 async function changeTaskStatus(
     taskId,
@@ -1878,10 +1682,8 @@ async function changeTaskStatus(
             currentStatus
         );
 
-
     let nextIndex =
         currentIndex + 1;
-
 
     if (
         nextIndex >=
@@ -1891,12 +1693,10 @@ async function changeTaskStatus(
         nextIndex = 0;
     }
 
-
     const nextStatus =
         options.statuses[
             nextIndex
         ];
-
 
     try {
 
@@ -1918,10 +1718,8 @@ async function changeTaskStatus(
                 }
             );
 
-
         const data =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -1931,9 +1729,7 @@ async function changeTaskStatus(
             );
         }
 
-
         await loadTasks();
-
 
     } catch (error) {
 
@@ -1945,9 +1741,9 @@ async function changeTaskStatus(
 }
 
 
-// =========================
+// =========================================================
 // DELETE
-// =========================
+// =========================================================
 
 async function deleteTask(taskId) {
 
@@ -1959,7 +1755,6 @@ async function deleteTask(taskId) {
 
         return;
     }
-
 
     try {
 
@@ -1980,10 +1775,8 @@ async function deleteTask(taskId) {
                 }
             );
 
-
         const data =
             await response.json();
-
 
         if (!response.ok) {
 
@@ -1993,9 +1786,7 @@ async function deleteTask(taskId) {
             );
         }
 
-
         await loadTasks();
-
 
     } catch (error) {
 
@@ -2003,7 +1794,6 @@ async function deleteTask(taskId) {
             "Delete error:",
             error
         );
-
 
         alert(
             "خطا: " +
@@ -2013,9 +1803,9 @@ async function deleteTask(taskId) {
 }
 
 
-// =========================
+// =========================================================
 // FILTERS
-// =========================
+// =========================================================
 
 function applyFilters() {
 
@@ -2026,30 +1816,25 @@ function applyFilters() {
             .toLowerCase() ||
         "";
 
-
     const category =
         $("categoryFilter")
             ?.value ||
         "";
-
 
     const priority =
         $("priorityFilter")
             ?.value ||
         "";
 
-
     const status =
         $("statusFilter")
             ?.value ||
         "";
 
-
     const dueDate =
         $("dueDateFilter")
             ?.value ||
         "";
-
 
     const filtered =
         allTasks.filter(task => {
@@ -2057,16 +1842,13 @@ function applyFilters() {
             const text = [
 
                 task.title,
-
                 task.description,
-
                 task.category
 
             ]
                 .filter(Boolean)
                 .join(" ")
                 .toLowerCase();
-
 
             if (
                 search &&
@@ -2075,7 +1857,6 @@ function applyFilters() {
 
                 return false;
             }
-
 
             if (
                 category &&
@@ -2086,7 +1867,6 @@ function applyFilters() {
                 return false;
             }
 
-
             if (
                 priority &&
                 task.priority !==
@@ -2096,7 +1876,6 @@ function applyFilters() {
                 return false;
             }
 
-
             if (
                 status &&
                 task.status !==
@@ -2105,7 +1884,6 @@ function applyFilters() {
 
                 return false;
             }
-
 
             if (
                 dueDate &&
@@ -2118,10 +1896,8 @@ function applyFilters() {
                 return false;
             }
 
-
             return true;
         });
-
 
     renderTasks(filtered);
 
@@ -2147,14 +1923,13 @@ function resetFilters() {
 
             $(id).value = "";
         }
-
     });
 }
 
 
-// =========================
-// DUE DATE
-// =========================
+// =========================================================
+// DUE DATE FILTER
+// =========================================================
 
 function checkDueDate(
     value,
@@ -2166,10 +1941,8 @@ function checkDueDate(
         return filter === "none";
     }
 
-
     const today =
         new Date();
-
 
     today.setHours(
         0,
@@ -2178,12 +1951,14 @@ function checkDueDate(
         0
     );
 
-
     const date =
-        new Date(
-            `${value}T00:00:00`
+        parseGregorianDateOnly(
+            value
         );
 
+    if (!date) {
+        return false;
+    }
 
     if (
         filter === "today"
@@ -2195,7 +1970,6 @@ function checkDueDate(
         );
     }
 
-
     if (
         filter === "upcoming"
     ) {
@@ -2203,14 +1977,20 @@ function checkDueDate(
         return date > today;
     }
 
+    if (
+        filter === "none"
+    ) {
 
-    return filter !== "none";
+        return false;
+    }
+
+    return true;
 }
 
 
-// =========================
+// =========================================================
 // REMINDERS
-// =========================
+// =========================================================
 
 function getUpcomingReminders(
     tasks
@@ -2218,7 +1998,6 @@ function getUpcomingReminders(
 
     const now =
         new Date();
-
 
     const limit =
         new Date(
@@ -2229,13 +2008,11 @@ function getUpcomingReminders(
             1000
         );
 
-
     return tasks.filter(task => {
 
         if (!task.reminder_at) {
             return false;
         }
-
 
         if (
             task.status ===
@@ -2245,26 +2022,26 @@ function getUpcomingReminders(
             return false;
         }
 
-
         const reminder =
             parseReminderDate(
                 task.reminder_at
             );
 
+        if (!reminder) {
+            return false;
+        }
 
         return (
-
-            reminder &&
-
             reminder >= now &&
-
             reminder <= limit
-
         );
-
     });
 }
 
+
+// =========================================================
+// PARSE REMINDER
+// =========================================================
 
 function parseReminderDate(
     value
@@ -2274,33 +2051,40 @@ function parseReminderDate(
         return null;
     }
 
+    let normalized =
+        String(value).trim();
 
-    const normalized =
-        String(value)
-            .replace(" ", "T");
+    normalized =
+        normalized.replace(
+            " ",
+            "T"
+        );
 
-
-    if (
-        !normalized.includes("T")
-    ) {
-
-        return null;
-    }
-
+    // PostgreSQL may return milliseconds
+    // and timezone information.
+    // Browser can parse standard ISO values.
 
     const date =
         new Date(
             normalized
         );
 
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
 
-    return Number.isNaN(
-        date.getTime()
-    )
-        ? null
-        : date;
+        return null;
+    }
+
+    return date;
 }
 
+
+// =========================================================
+// REMINDER INPUT
+// =========================================================
 
 function convertReminderForInput(
     value
@@ -2310,30 +2094,38 @@ function convertReminderForInput(
         return "";
     }
 
-
-    const normalized =
+    let normalized =
         String(value)
-            .replace(" ", "T");
+            .trim()
+            .replace(
+                " ",
+                "T"
+            );
 
+    // datetime-local needs:
+    // YYYY-MM-DDTHH:MM
 
-    return normalized.length >= 16
-        ? normalized.substring(
+    if (
+        normalized.length >= 16
+    ) {
+
+        return normalized.substring(
             0,
             16
-        )
-        : normalized;
+        );
+    }
+
+    return normalized;
 }
 
 
-// =========================
+// =========================================================
 // IN-SITE REMINDER CHECKER
-// =========================
+// =========================================================
 
 function startReminderChecker() {
 
-    // یک بار همین الان بررسی کن
     checkRemindersNow();
-
 
     if (reminderCheckInterval) {
 
@@ -2342,8 +2134,6 @@ function startReminderChecker() {
         );
     }
 
-
-    // بعد از آن هر ۳۰ ثانیه
     reminderCheckInterval =
         setInterval(
             checkRemindersNow,
@@ -2362,17 +2152,14 @@ function checkRemindersNow() {
         return;
     }
 
-
     const now =
         new Date();
-
 
     allTasks.forEach(task => {
 
         if (!task.reminder_at) {
             return;
         }
-
 
         if (
             task.status ===
@@ -2382,23 +2169,18 @@ function checkRemindersNow() {
             return;
         }
 
-
         const reminderDate =
             parseReminderDate(
                 task.reminder_at
             );
 
-
         if (!reminderDate) {
             return;
         }
 
-
         const reminderKey =
             `${task.id}_${task.reminder_at}`;
 
-
-        // قبلاً نمایش داده شده
         if (
             notifiedReminders.has(
                 reminderKey
@@ -2408,8 +2190,6 @@ function checkRemindersNow() {
             return;
         }
 
-
-        // زمان یادآوری رسیده
         if (
             reminderDate <= now
         ) {
@@ -2418,19 +2198,17 @@ function checkRemindersNow() {
                 task
             );
 
-
             notifiedReminders.add(
                 reminderKey
             );
         }
-
     });
 }
 
 
-// =========================
-// NOTIFICATION
-// =========================
+// =========================================================
+// NOTIFICATION STYLES
+// =========================================================
 
 function addReminderNotificationStyles() {
 
@@ -2441,16 +2219,13 @@ function addReminderNotificationStyles() {
         return;
     }
 
-
     const style =
         document.createElement(
             "style"
         );
 
-
     style.id =
         "reminderNotificationStyles";
-
 
     style.textContent = `
 
@@ -2469,7 +2244,6 @@ function addReminderNotificationStyles() {
             }
         }
 
-
         @keyframes reminderSlideOut {
 
             from {
@@ -2484,7 +2258,6 @@ function addReminderNotificationStyles() {
                     translateX(35px);
             }
         }
-
 
         #notificationContainer {
 
@@ -2512,7 +2285,6 @@ function addReminderNotificationStyles() {
 
             pointer-events: none;
         }
-
 
         .site-reminder-notification {
 
@@ -2547,14 +2319,12 @@ function addReminderNotificationStyles() {
             font-family: inherit;
         }
 
-
         .site-reminder-icon {
 
             font-size: 28px;
 
             flex-shrink: 0;
         }
-
 
         .site-reminder-content {
 
@@ -2569,14 +2339,12 @@ function addReminderNotificationStyles() {
             min-width: 0;
         }
 
-
         .site-reminder-content strong {
 
             color: #5b2525;
 
             font-size: 15px;
         }
-
 
         .site-reminder-content span {
 
@@ -2588,7 +2356,6 @@ function addReminderNotificationStyles() {
 
             word-break: break-word;
         }
-
 
         .site-reminder-close {
 
@@ -2607,12 +2374,10 @@ function addReminderNotificationStyles() {
             line-height: 1;
         }
 
-
         .site-reminder-close:hover {
 
             color: #5b2525;
         }
-
 
         @media (max-width: 600px) {
 
@@ -2629,12 +2394,15 @@ function addReminderNotificationStyles() {
         }
     `;
 
-
     document.head.appendChild(
         style
     );
 }
 
+
+// =========================================================
+// SHOW REMINDER
+// =========================================================
 
 function showReminderNotification(
     task
@@ -2643,7 +2411,6 @@ function showReminderNotification(
     let container =
         $("notificationContainer");
 
-
     if (!container) {
 
         container =
@@ -2651,33 +2418,27 @@ function showReminderNotification(
                 "div"
             );
 
-
         container.id =
             "notificationContainer";
-
 
         document.body.appendChild(
             container
         );
     }
 
-
     const notification =
         document.createElement(
             "div"
         );
 
-
     notification.className =
         "site-reminder-notification";
-
 
     notification.innerHTML = `
 
         <div class="site-reminder-icon">
             🔔
         </div>
-
 
         <div class="site-reminder-content">
 
@@ -2693,7 +2454,6 @@ function showReminderNotification(
 
         </div>
 
-
         <button
             type="button"
             class="site-reminder-close"
@@ -2703,12 +2463,10 @@ function showReminderNotification(
         </button>
     `;
 
-
     const closeButton =
         notification.querySelector(
             ".site-reminder-close"
         );
-
 
     closeButton?.addEventListener(
         "click",
@@ -2716,7 +2474,6 @@ function showReminderNotification(
 
             notification.style.animation =
                 "reminderSlideOut .25s ease";
-
 
             setTimeout(
                 () =>
@@ -2726,13 +2483,10 @@ function showReminderNotification(
         }
     );
 
-
     container.appendChild(
         notification
     );
 
-
-    // بعد از ۸ ثانیه خودکار بسته شود
     setTimeout(
         () => {
 
@@ -2742,7 +2496,6 @@ function showReminderNotification(
 
                 notification.style.animation =
                     "reminderSlideOut .25s ease";
-
 
                 setTimeout(
                     () =>
@@ -2757,9 +2510,9 @@ function showReminderNotification(
 }
 
 
-// =========================
+// =========================================================
 // RENDER REMINDERS
-// =========================
+// =========================================================
 
 function renderReminders(
     tasks
@@ -2768,17 +2521,14 @@ function renderReminders(
     const list =
         $("reminderList");
 
-
     if (!list) {
         return;
     }
-
 
     const reminders =
         getUpcomingReminders(
             tasks
         );
-
 
     if (!reminders.length) {
 
@@ -2798,13 +2548,10 @@ function renderReminders(
             </div>
         `;
 
-
         return;
     }
 
-
     list.innerHTML = "";
-
 
     reminders
         .sort(
@@ -2823,17 +2570,14 @@ function renderReminders(
                     "div"
                 );
 
-
             item.className =
                 "reminder-card";
-
 
             item.innerHTML = `
 
                 <div class="reminder-icon">
                     🔔
                 </div>
-
 
                 <div class="reminder-info">
 
@@ -2844,14 +2588,15 @@ function renderReminders(
                     </strong>
 
                     <span>
-                        ${formatReminder(
-                            task.reminder_at
+                        ${escapeHtml(
+                            formatReminder(
+                                task.reminder_at
+                            )
                         )}
                     </span>
 
                 </div>
             `;
-
 
             list.appendChild(
                 item
@@ -2860,9 +2605,25 @@ function renderReminders(
 }
 
 
-// =========================
-// DATE FORMAT
-// =========================
+// =========================================================
+// DATE DISPLAY
+// =========================================================
+//
+// IMPORTANT:
+//
+// Input:
+// Gregorian
+//
+// Database:
+// Gregorian
+//
+// JavaScript calculation:
+// Gregorian
+//
+// Display:
+// Jalali / Persian
+//
+// =========================================================
 
 function formatReminder(
     value
@@ -2873,21 +2634,18 @@ function formatReminder(
         return "بدون یادآوری";
     }
 
-
     const date =
         parseReminderDate(
             value
         );
-
 
     if (!date) {
 
         return value;
     }
 
-
     return date.toLocaleString(
-        "fa-IR",
+        "fa-IR-u-ca-persian",
         {
             dateStyle: "short",
             timeStyle: "short"
@@ -2904,230 +2662,32 @@ function formatDateForDisplay(
         return "";
     }
 
-
     const date =
-        new Date(
-            `${value}T00:00:00`
+        parseGregorianDateOnly(
+            value
         );
 
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
+    if (!date) {
 
         return value;
     }
 
-
     return date.toLocaleDateString(
-        "fa-IR"
+        "fa-IR-u-ca-persian"
     );
 }
 
 
-// =========================
-// JALALI DATE CONVERSION
-// =========================
-
-function toEnglishDigits(
-    value
-) {
-
-    if (!value) {
-        return value;
-    }
-
-
-    return String(value)
-
-        .replace(
-            /[۰-۹]/g,
-            digit =>
-                String(
-                    "۰۱۲۳۴۵۶۷۸۹"
-                        .indexOf(
-                            digit
-                        )
-                )
-        )
-
-        .replace(
-            /[٠-٩]/g,
-            digit =>
-                String(
-                    "٠١٢٣٤٥٦٧٨٩"
-                        .indexOf(
-                            digit
-                        )
-                )
-        );
-}
-
-
-function jalaliToGregorian(
-    jy,
-    jm,
-    jd
-) {
-
-    jy = Number(jy);
-
-    jm = Number(jm);
-
-    jd = Number(jd);
-
-
-    jy += 1595;
-
-
-    let days =
-        -355668 +
-        (365 * jy) +
-        Math.floor(jy / 33) * 8 +
-        Math.floor(
-            ((jy % 33) + 3) / 4
-        ) +
-        jd;
-
-
-    if (jm < 7) {
-
-        days +=
-            (jm - 1) * 31;
-
-    } else {
-
-        days +=
-            ((jm - 7) * 30) +
-            186;
-    }
-
-
-    let gy =
-        400 *
-        Math.floor(
-            days / 146097
-        );
-
-
-    days %= 146097;
-
-
-    if (days > 36524) {
-
-        gy +=
-            100 *
-            Math.floor(
-                --days / 36524
-            );
-
-
-        days %= 36524;
-
-
-        if (days >= 365) {
-            days++;
-        }
-    }
-
-
-    gy +=
-        4 *
-        Math.floor(
-            days / 1461
-        );
-
-
-    days %= 1461;
-
-
-    if (days > 365) {
-
-        gy +=
-            Math.floor(
-                (days - 1) / 365
-            );
-
-
-        days =
-            (days - 1) % 365;
-    }
-
-
-    let gd =
-        days + 1;
-
-
-    const leap =
-        (
-            gy % 4 === 0 &&
-            gy % 100 !== 0
-        ) ||
-        gy % 400 === 0;
-
-
-    const monthDays = [
-
-        31,
-
-        leap
-            ? 29
-            : 28,
-
-        31,
-
-        30,
-
-        31,
-
-        30,
-
-        31,
-
-        31,
-
-        30,
-
-        31,
-
-        30,
-
-        31
-    ];
-
-
-    let gm = 1;
-
-
-    while (
-        gm <= 12 &&
-        gd >
-        monthDays[gm - 1]
-    ) {
-
-        gd -=
-            monthDays[
-                gm - 1
-            ];
-
-        gm++;
-    }
-
-
-    return {
-
-        year: gy,
-
-        month: gm,
-
-        day: gd
-    };
-}
-
-
-function normalizeDateToGregorian(
+// =========================================================
+// GREGORIAN DATE PARSER
+// =========================================================
+//
+// No Jalali conversion happens here.
+// The value is Gregorian.
+// This function is only for safe parsing.
+//
+
+function parseGregorianDateOnly(
     value
 ) {
 
@@ -3135,41 +2695,26 @@ function normalizeDateToGregorian(
         return null;
     }
 
-
-    let date =
-        toEnglishDigits(
-            value
-        )
-            .trim()
-            .replace(
-                /\//g,
-                "-"
-            );
-
-
     const parts =
-        date.split("-");
-
+        String(value)
+            .substring(0, 10)
+            .split("-");
 
     if (
         parts.length !== 3
     ) {
 
-        return value;
+        return null;
     }
-
 
     const year =
         Number(parts[0]);
 
-
     const month =
         Number(parts[1]);
 
-
     const day =
         Number(parts[2]);
-
 
     if (
         !year ||
@@ -3177,51 +2722,31 @@ function normalizeDateToGregorian(
         !day
     ) {
 
-        return value;
+        return null;
     }
 
+    const date =
+        new Date(
+            year,
+            month - 1,
+            day
+        );
 
-    // سال شمسی
     if (
-        year >= 1200 &&
-        year <= 1600
+        Number.isNaN(
+            date.getTime()
+        )
     ) {
 
-        const gregorian =
-            jalaliToGregorian(
-                year,
-                month,
-                day
-            );
-
-
-        return [
-
-            gregorian.year,
-
-            String(
-                gregorian.month
-            ).padStart(2, "0"),
-
-            String(
-                gregorian.day
-            ).padStart(2, "0")
-
-        ].join("-");
+        return null;
     }
 
+    date.setHours(
+        0,
+        0,
+        0,
+        0
+    );
 
-    // اگر از قبل میلادی بوده
-    return [
-
-        String(year)
-            .padStart(4, "0"),
-
-        String(month)
-            .padStart(2, "0"),
-
-        String(day)
-            .padStart(2, "0")
-
-    ].join("-");
+    return date;
 }
