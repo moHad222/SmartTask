@@ -517,7 +517,7 @@ async function loginUser(event) {
 
         showAuthMessage(
             "loginMessage",
-            "نام کاربری و رمز عبور رو وارد کن."
+            "نام کاربری و رمز عبور را وارد کن."
         );
 
         return;
@@ -612,7 +612,7 @@ async function registerUser(event) {
 
         showAuthMessage(
             "registerMessage",
-            "نام کاربری و رمز عبور رو وارد کن."
+            "نام کاربری و رمز عبور را وارد کن."
         );
 
         return;
@@ -657,7 +657,7 @@ async function registerUser(event) {
 
             throw new Error(
                 data.error ||
-                "ثبت‌ نام انجام نشد."
+                "ثبت‌نام انجام نشد."
             );
         }
 
@@ -1062,7 +1062,7 @@ function renderTasks(tasks) {
         card.dataset.taskId =
             task.id;
 
-        card.innerHTML = 
+        card.innerHTML = `
             <div class="task-content">
 
                 <div class="task-title-row">
@@ -1145,7 +1145,7 @@ function renderTasks(tasks) {
                 </div>
 
             </div>
-        ;
+        `;
 
 
         card
@@ -1268,7 +1268,7 @@ async function handleTaskSubmit(event) {
     if (!title) {
 
         alert(
-            "عنوان کار رو وارد کن."
+            "عنوان کار را وارد کن."
         );
 
         return;
@@ -1486,7 +1486,7 @@ async function predictCategory() {
     if (!title) {
 
         showCategoryMessage(
-            "ابتدا عنوان کار رو وارد کن."
+            "ابتدا عنوان کار را وارد کن."
         );
 
         return;
@@ -1651,7 +1651,7 @@ async function deleteTask(
 
     if (
         !confirm(
-            "آیا مطمئنی می‌خواهی این کار رو حذف کنی؟"
+            "آیا مطمئنی می‌خواهی این کار را حذف کنی؟"
         )
     ) {
         return;
