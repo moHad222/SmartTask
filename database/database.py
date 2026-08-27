@@ -139,7 +139,7 @@ def init_db():
 
                     id SERIAL PRIMARY KEY,
 
-                    username TEXT NOT NULL,
+                    username TEXT NOT NULL UNIQUE,
 
                     password TEXT NOT NULL,
 
@@ -208,6 +208,22 @@ def init_db():
 
 
             # =================================================
+            # DATABASE MIGRATIONS
+            # =================================================
+            # اگر جدول tasks از قبل ساخته شده باشد،
+            # CREATE TABLE بالا ستون جدید را اضافه نمی‌کند.
+            #
+            # بنابراین ستون reminder_at را به صورت جداگانه
+            # در صورت نبودن ایجاد می‌کنیم.
+            # =================================================
+
+            cursor.execute("""
+                ALTER TABLE tasks
+                ADD COLUMN IF NOT EXISTS reminder_at TIMESTAMP
+            """)
+
+
+            # =================================================
             # DEFAULT CATEGORIES
             # =================================================
 
@@ -233,7 +249,6 @@ def init_db():
 
             guest = cursor.fetchone()
 
-
             if not guest:
 
                 cursor.execute("""
@@ -251,6 +266,11 @@ def init_db():
 
 
         conn.commit()
+
+    except Exception:
+
+        conn.rollback()
+        raise
 
     finally:
 
@@ -323,10 +343,14 @@ def create_guest_user():
 
         conn.commit()
 
+    except Exception:
+
+        conn.rollback()
+        raise
+
     finally:
 
         conn.close()
-
 
     return {
         "id": user_id,
@@ -373,14 +397,12 @@ def create_user(
         password or ""
     )
 
-
     if not username:
 
         return (
             None,
             "نام کاربری الزامی است."
         )
-
 
     if len(username) < 3:
 
@@ -389,14 +411,12 @@ def create_user(
             "نام کاربری باید حداقل ۳ کاراکتر باشد."
         )
 
-
     if len(username) > 30:
 
         return (
             None,
             "نام کاربری نباید بیشتر از ۳۰ کاراکتر باشد."
         )
-
 
     if username == GUEST_USERNAME:
 
@@ -405,7 +425,6 @@ def create_user(
             "این نام کاربری قابل استفاده نیست."
         )
 
-
     if not password:
 
         return (
@@ -413,14 +432,12 @@ def create_user(
             "رمز عبور الزامی است."
         )
 
-
     if len(password) < 4:
 
         return (
             None,
             "رمز عبور باید حداقل ۴ کاراکتر باشد."
         )
-
 
     existing = get_user_by_username(
         username
@@ -432,7 +449,6 @@ def create_user(
             None,
             "این نام کاربری قبلاً ثبت شده است."
         )
-
 
     conn = get_connection()
 
@@ -458,10 +474,14 @@ def create_user(
 
         conn.commit()
 
+    except Exception:
+
+        conn.rollback()
+        raise
+
     finally:
 
         conn.close()
-
 
     return user_id, None
 
@@ -479,21 +499,17 @@ def authenticate_user(
         password or ""
     )
 
-
     user = get_user_by_username(
         username
     )
-
 
     if not user:
 
         return None
 
-
     if username == GUEST_USERNAME:
 
         return None
-
 
     if not verify_password(
         password,
@@ -501,7 +517,6 @@ def authenticate_user(
     ):
 
         return None
-
 
     return user
 
@@ -543,7 +558,6 @@ def get_category_id(
 
         return None
 
-
     conn = get_connection()
 
     try:
@@ -578,7 +592,7 @@ def create_task(
     title,
     description="",
     priority="معمولی",
-    category="دانشگاه",
+    category="تعیین نشده",
     due_date=None,
     reminder_at=None
 ):
@@ -587,16 +601,13 @@ def create_task(
 
         priority = "معمولی"
 
-
     if category not in CATEGORIES:
 
         category = "تعیین نشده"
 
-
     category_id = get_category_id(
         category
     )
-
 
     conn = get_connection()
 
@@ -661,10 +672,14 @@ def create_task(
 
         conn.commit()
 
+    except Exception:
+
+        conn.rollback()
+        raise
+
     finally:
 
         conn.close()
-
 
     return task_id
 
@@ -843,16 +858,13 @@ def update_task(
 
         priority = "معمولی"
 
-
     if category not in CATEGORIES:
 
         category = "تعیین نشده"
 
-
     category_id = get_category_id(
         category
     )
-
 
     conn = get_connection()
 
@@ -905,10 +917,14 @@ def update_task(
 
         conn.commit()
 
+    except Exception:
+
+        conn.rollback()
+        raise
+
     finally:
 
         conn.close()
-
 
     return changed > 0
 
@@ -926,7 +942,6 @@ def update_task_status(
     if status not in STATUSES:
 
         return False
-
 
     conn = get_connection()
 
@@ -957,10 +972,14 @@ def update_task_status(
 
         conn.commit()
 
+    except Exception:
+
+        conn.rollback()
+        raise
+
     finally:
 
         conn.close()
-
 
     return changed > 0
 
@@ -996,10 +1015,14 @@ def delete_task(
 
         conn.commit()
 
+    except Exception:
+
+        conn.rollback()
+        raise
+
     finally:
 
         conn.close()
-
 
     return deleted > 0
 

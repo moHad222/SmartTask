@@ -39,7 +39,6 @@ DEFAULT_PORT = 8000
 # DATABASE
 # =========================================================
 
-# DATABASE_URL توسط محیط Liara تأمین می‌شود.
 init_db()
 
 
@@ -54,7 +53,12 @@ SESSIONS = {}
 # RESPONSE HELPERS
 # =========================================================
 
-def send_json(handler, data, status=200, session_id=None):
+def send_json(
+    handler,
+    data,
+    status=200,
+    session_id=None
+):
 
     response = json.dumps(
         data,
@@ -74,6 +78,7 @@ def send_json(handler, data, status=200, session_id=None):
     )
 
     if session_id:
+
         handler.send_header(
             "Set-Cookie",
             f"session_id={session_id}; "
@@ -99,6 +104,7 @@ def read_json(handler):
         )
 
         if content_length <= 0:
+
             return {}
 
         body = handler.rfile.read(
@@ -106,6 +112,7 @@ def read_json(handler):
         )
 
         if not body:
+
             return {}
 
         return json.loads(
@@ -113,6 +120,7 @@ def read_json(handler):
         )
 
     except Exception:
+
         return {}
 
 
@@ -128,17 +136,21 @@ def get_cookie_session(handler):
     )
 
     if not cookie_header:
+
         return None
 
     cookie = SimpleCookie()
 
     try:
+
         cookie.load(cookie_header)
 
     except Exception:
+
         return None
 
     if "session_id" not in cookie:
+
         return None
 
     return cookie["session_id"].value
@@ -163,7 +175,9 @@ def create_session(
 
 def get_current_session(handler):
 
-    session_id = get_cookie_session(handler)
+    session_id = get_cookie_session(
+        handler
+    )
 
     if session_id:
 
@@ -172,14 +186,13 @@ def get_current_session(handler):
         )
 
         if session:
-            return session_id, session
 
-    # اگر Session وجود نداشت،
-    # یک کاربر مهمان جدید ساخته می‌شود.
+            return session_id, session
 
     guest = create_guest_user()
 
     if not guest:
+
         raise RuntimeError(
             "ساخت کاربر مهمان انجام نشد."
         )
@@ -245,6 +258,7 @@ def validate_task_data(data):
         ).strip()
 
         if not due_date:
+
             due_date = None
 
     if reminder_at is not None:
@@ -254,13 +268,14 @@ def validate_task_data(data):
         ).strip()
 
         if not reminder_at:
+
             reminder_at = None
 
     if not title:
 
         return (
             None,
-            "عنوان Task الزامی است."
+            "عنوان کار الزامی است."
         )
 
     if priority not in PRIORITIES:
@@ -291,7 +306,9 @@ def validate_task_data(data):
 # REQUEST HANDLER
 # =========================================================
 
-class SmartTaskHandler(SimpleHTTPRequestHandler):
+class SmartTaskHandler(
+    SimpleHTTPRequestHandler
+):
 
     # =====================================================
     # PATH TRANSLATION
@@ -303,7 +320,6 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
         clean_path = parsed.path
 
-        # صفحه اصلی
         if clean_path == "/":
 
             return str(
@@ -312,7 +328,6 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
                 "index.html"
             )
 
-        # فایل‌های استاتیک
         if clean_path.startswith("/static/"):
 
             relative_path = clean_path[
@@ -862,7 +877,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
                     self,
                     {
                         "error":
-                            "عنوان Task خالی است."
+                            "عنوان کار خالی است."
                     },
                     400,
                     session_id
@@ -1007,7 +1022,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                     {
                         "error":
-                            "شناسه Task ارسال نشده است."
+                            "شناسه کار ارسال نشده است."
                     },
 
                     400,
@@ -1067,7 +1082,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                         {
                             "error":
-                                "Task پیدا نشد."
+                                "کار پیدا نشد."
                         },
 
                         404,
@@ -1128,7 +1143,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                     {
                         "error":
-                            "شناسه یا وضعیت Task ارسال نشده است."
+                            "شناسه یا وضعیت کار ارسال نشده است."
                     },
 
                     400,
@@ -1156,7 +1171,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                         {
                             "error":
-                                "Task یا وضعیت نامعتبر است."
+                                "کار یا وضعیت نامعتبر است."
                         },
 
                         400,
@@ -1216,7 +1231,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                     {
                         "error":
-                            "شناسه Task ارسال نشده است."
+                            "شناسه کار ارسال نشده است."
                     },
 
                     400,
@@ -1242,7 +1257,7 @@ class SmartTaskHandler(SimpleHTTPRequestHandler):
 
                         {
                             "error":
-                                "Task پیدا نشد."
+                                "کار پیدا نشد."
                         },
 
                         404,
@@ -1359,4 +1374,5 @@ def run_server():
 # =========================================================
 
 if __name__ == "__main__":
+
     run_server()
