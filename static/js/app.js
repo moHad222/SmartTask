@@ -14,18 +14,27 @@ let currentUser = {
     is_guest: true
 };
 
-const notifiedReminders = new Set();
+
+// =========================
+// REMINDER NOTIFICATIONS
+// =========================
 
 let reminderCheckInterval = null;
+
+const notifiedReminders = new Set();
+
+const REMINDER_CHECK_INTERVAL = 30 * 1000;
+
+
+// =========================
+// HELPERS
+// =========================
 
 const $ = id => document.getElementById(id);
 
 
-/* =========================================================
-   GENERAL
-========================================================= */
-
 function escapeHtml(value) {
+
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -34,6 +43,10 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
+
+// =========================
+// START
+// =========================
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -45,38 +58,63 @@ async function initializeApp() {
 
     setupEvents();
 
+    addReminderNotificationStyles();
+
     updateUserUI();
 
-    initializeDatePickers();
 
     try {
 
         await loadSession();
+
+    } catch (error) {
+
+        console.error(
+            "Session error:",
+            error
+        );
+    }
+
+
+    try {
+
         await loadOptions();
+
+    } catch (error) {
+
+        console.error(
+            "Options error:",
+            error
+        );
+    }
+
+
+    try {
+
         await loadTasks();
 
     } catch (error) {
 
         console.error(
-            "Initialization error:",
+            "Tasks error:",
             error
         );
     }
 
-    await requestNotificationPermission();
 
     startReminderChecker();
 }
 
 
-/* =========================================================
-   SESSION
-========================================================= */
+// =========================
+// SESSION
+// =========================
 
 async function loadSession() {
 
     const response =
         await fetch("/api/session");
+
 
     if (!response.ok) {
 
@@ -85,8 +123,10 @@ async function loadSession() {
         );
     }
 
+
     currentUser =
         await response.json();
+
 
     updateUserUI();
 }
@@ -95,13 +135,16 @@ async function loadSession() {
 function updateUserUI() {
 
     const username =
-        currentUser.username || "مهمان";
+        currentUser.username ||
+        "مهمان";
+
 
     if ($("currentUsername")) {
 
         $("currentUsername").textContent =
             username;
     }
+
 
     if ($("welcomeTitle")) {
 
@@ -111,6 +154,7 @@ function updateUserUI() {
                 : `سلام ${username} 👋`;
     }
 
+
     if ($("welcomeText")) {
 
         $("welcomeText").textContent =
@@ -119,10 +163,12 @@ function updateUserUI() {
                 : `${username}، کارهات رو مدیریت کن و چیزی رو فراموش نکن.`;
     }
 
+
     $("loginButton")?.classList.toggle(
         "hidden",
         !currentUser.is_guest
     );
+
 
     $("logoutButton")?.classList.toggle(
         "hidden",
@@ -131,14 +177,15 @@ function updateUserUI() {
 }
 
 
-/* =========================================================
-   OPTIONS
-========================================================= */
+// =========================
+// OPTIONS
+// =========================
 
 async function loadOptions() {
 
     const response =
         await fetch("/api/options");
+
 
     if (!response.ok) {
 
@@ -147,8 +194,10 @@ async function loadOptions() {
         );
     }
 
+
     options =
         await response.json();
+
 
     fillSelect(
         $("categoryFilter"),
@@ -156,15 +205,25 @@ async function loadOptions() {
         "همه دسته‌بندی‌ها"
     );
 
+
     fillSelect(
         $("priorityFilter"),
         options.priorities,
         "همه اولویت‌ها"
     );
 
+
     fillSelect(
         $("priority"),
         options.priorities
+    );
+
+
+    // وضعیت فیلتر
+    fillSelect(
+        $("statusFilter"),
+        options.statuses,
+        "همه وضعیت‌ها"
     );
 }
 
@@ -175,72 +234,85 @@ function fillSelect(
     defaultText = null
 ) {
 
-    if (!select) return;
+    if (!select) {
+        return;
+    }
+
 
     select.innerHTML = "";
+
 
     if (defaultText !== null) {
 
         const option =
             document.createElement("option");
 
+
         option.value = "";
 
         option.textContent =
             defaultText;
 
+
         select.appendChild(option);
     }
 
-    (values || []).forEach(value => {
+
+    if (!Array.isArray(values)) {
+        return;
+    }
+
+
+    values.forEach(value => {
 
         const option =
             document.createElement("option");
 
+
         option.value = value;
 
         option.textContent = value;
+
 
         select.appendChild(option);
     });
 }
 
 
-/* =========================================================
-   EVENTS
-========================================================= */
+// =========================
+// EVENTS
+// =========================
 
 function setupEvents() {
 
-    $("openTaskModal")
-        ?.addEventListener(
-            "click",
-            openCreateModal
-        );
+    $("openTaskModal")?.addEventListener(
+        "click",
+        openCreateModal
+    );
 
-    $("closeTaskModal")
-        ?.addEventListener(
-            "click",
-            closeTaskModal
-        );
 
-    $("cancelTask")
-        ?.addEventListener(
-            "click",
-            closeTaskModal
-        );
+    $("closeTaskModal")?.addEventListener(
+        "click",
+        closeTaskModal
+    );
 
-    $("taskForm")
-        ?.addEventListener(
-            "submit",
-            handleTaskSubmit
-        );
 
-    $("predictCategory")
-        ?.addEventListener(
-            "click",
-            predictCategory
-        );
+    $("cancelTask")?.addEventListener(
+        "click",
+        closeTaskModal
+    );
+
+
+    $("taskForm")?.addEventListener(
+        "submit",
+        handleTaskSubmit
+    );
+
+
+    $("predictCategory")?.addEventListener(
+        "click",
+        predictCategory
+    );
 
 
     [
@@ -257,93 +329,107 @@ function setupEvents() {
                 : "change",
             applyFilters
         );
+
     });
 
 
-    $("loginButton")
-        ?.addEventListener(
-            "click",
-            openAuthModal
-        );
+    // =========================
+    // AUTH
+    // =========================
 
-    $("closeAuthModal")
-        ?.addEventListener(
-            "click",
-            closeAuthModal
-        );
-
-    $("loginTab")
-        ?.addEventListener(
-            "click",
-            () => showAuthTab("login")
-        );
-
-    $("registerTab")
-        ?.addEventListener(
-            "click",
-            () => showAuthTab("register")
-        );
-
-    $("loginForm")
-        ?.addEventListener(
-            "submit",
-            loginUser
-        );
-
-    $("registerForm")
-        ?.addEventListener(
-            "submit",
-            registerUser
-        );
-
-    $("guestButton")
-        ?.addEventListener(
-            "click",
-            continueAsGuest
-        );
-
-    $("guestButtonRegister")
-        ?.addEventListener(
-            "click",
-            continueAsGuest
-        );
-
-    $("logoutButton")
-        ?.addEventListener(
-            "click",
-            logoutUser
-        );
+    $("loginButton")?.addEventListener(
+        "click",
+        openAuthModal
+    );
 
 
-    $("taskModal")
-        ?.addEventListener(
-            "click",
-            event => {
+    $("closeAuthModal")?.addEventListener(
+        "click",
+        closeAuthModal
+    );
 
-                if (
-                    event.target ===
-                    $("taskModal")
-                ) {
-                    closeTaskModal();
-                }
+
+    $("loginTab")?.addEventListener(
+        "click",
+        () => showAuthTab("login")
+    );
+
+
+    $("registerTab")?.addEventListener(
+        "click",
+        () => showAuthTab("register")
+    );
+
+
+    $("loginForm")?.addEventListener(
+        "submit",
+        loginUser
+    );
+
+
+    $("registerForm")?.addEventListener(
+        "submit",
+        registerUser
+    );
+
+
+    $("guestButton")?.addEventListener(
+        "click",
+        continueAsGuest
+    );
+
+
+    $("guestButtonRegister")?.addEventListener(
+        "click",
+        continueAsGuest
+    );
+
+
+    $("logoutButton")?.addEventListener(
+        "click",
+        logoutUser
+    );
+
+
+    // =========================
+    // MODAL BACKDROP
+    // =========================
+
+    $("taskModal")?.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                $("taskModal")
+            ) {
+
+                closeTaskModal();
             }
-        );
+
+        }
+    );
 
 
-    $("authModal")
-        ?.addEventListener(
-            "click",
-            event => {
+    $("authModal")?.addEventListener(
+        "click",
+        event => {
 
-                if (
-                    event.target ===
-                    $("authModal")
-                ) {
-                    closeAuthModal();
-                }
+            if (
+                event.target ===
+                $("authModal")
+            ) {
+
+                closeAuthModal();
             }
-        );
 
+        }
+    );
+
+
+    // =========================
+    // ESCAPE
+    // =========================
 
     document.addEventListener(
         "keydown",
@@ -352,35 +438,43 @@ function setupEvents() {
             if (event.key === "Escape") {
 
                 closeTaskModal();
+
                 closeAuthModal();
-                closeDatePickers();
             }
+
         }
     );
 }
 
 
-/* =========================================================
-   AUTH
-========================================================= */
+// =========================
+// AUTH MODAL
+// =========================
 
 function openAuthModal() {
 
     const modal =
         $("authModal");
 
-    if (!modal) return;
+
+    if (!modal) {
+        return;
+    }
+
 
     showAuthTab("login");
 
     clearAuthMessages();
 
+
     modal.classList.add("active");
 
     modal.style.display = "flex";
 
+
     setTimeout(
-        () => $("loginUsername")?.focus(),
+        () =>
+            $("loginUsername")?.focus(),
         100
     );
 }
@@ -391,13 +485,19 @@ function closeAuthModal() {
     const modal =
         $("authModal");
 
-    if (!modal) return;
+
+    if (!modal) {
+        return;
+    }
+
 
     modal.classList.remove("active");
 
     modal.style.display = "none";
 
+
     clearAuthMessages();
+
 
     $("loginForm")?.reset();
 
@@ -410,25 +510,30 @@ function showAuthTab(tab) {
     const login =
         tab === "login";
 
+
     $("loginTab")?.classList.toggle(
         "active",
         login
     );
+
 
     $("registerTab")?.classList.toggle(
         "active",
         !login
     );
 
+
     $("loginForm")?.classList.toggle(
         "hidden",
         !login
     );
 
+
     $("registerForm")?.classList.toggle(
         "hidden",
         login
     );
+
 
     if ($("authTitle")) {
 
@@ -437,6 +542,7 @@ function showAuthTab(tab) {
                 ? "ورود به حساب"
                 : "ساخت حساب جدید";
     }
+
 
     clearAuthMessages();
 }
@@ -451,7 +557,11 @@ function clearAuthMessages() {
 
         const element = $(id);
 
-        if (!element) return;
+
+        if (!element) {
+            return;
+        }
+
 
         element.textContent = "";
 
@@ -470,29 +580,40 @@ function showAuthMessage(
     const element =
         $(elementId);
 
-    if (!element) return;
+
+    if (!element) {
+        return;
+    }
+
 
     element.textContent =
         message;
+
 
     element.className =
         `auth-message ${type}`;
 }
 
 
-/* =========================================================
-   LOGIN
-========================================================= */
+// =========================
+// LOGIN
+// =========================
 
 async function loginUser(event) {
 
     event.preventDefault();
 
+
     const username =
-        $("loginUsername")?.value.trim();
+        $("loginUsername")
+            ?.value
+            .trim();
+
 
     const password =
-        $("loginPassword")?.value || "";
+        $("loginPassword")
+            ?.value || "";
+
 
     if (!username || !password) {
 
@@ -504,6 +625,7 @@ async function loginUser(event) {
         return;
     }
 
+
     try {
 
         const response =
@@ -511,20 +633,23 @@ async function loginUser(event) {
                 "/api/login",
                 {
                     method: "POST",
+
                     headers: {
                         "Content-Type":
                             "application/json"
                     },
-                    body:
-                        JSON.stringify({
-                            username,
-                            password
-                        })
+
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
                 }
             );
 
+
         const data =
             await response.json();
+
 
         if (!response.ok) {
 
@@ -534,11 +659,17 @@ async function loginUser(event) {
             );
         }
 
+
         currentUser = {
-            username: data.username,
+
+            username:
+                data.username,
+
             logged_in: true,
+
             is_guest: false
         };
+
 
         updateUserUI();
 
@@ -546,11 +677,14 @@ async function loginUser(event) {
 
         resetFilters();
 
+
         await loadTasks();
+
 
         alert(
             `سلام ${data.username} 👋 خوش اومدی`
         );
+
 
     } catch (error) {
 
@@ -558,6 +692,7 @@ async function loginUser(event) {
             "Login error:",
             error
         );
+
 
         showAuthMessage(
             "loginMessage",
@@ -567,22 +702,30 @@ async function loginUser(event) {
 }
 
 
-/* =========================================================
-   REGISTER
-========================================================= */
+// =========================
+// REGISTER
+// =========================
 
 async function registerUser(event) {
 
     event.preventDefault();
 
+
     const username =
-        $("registerUsername")?.value.trim();
+        $("registerUsername")
+            ?.value
+            .trim();
+
 
     const password =
-        $("registerPassword")?.value || "";
+        $("registerPassword")
+            ?.value || "";
+
 
     const repeatPassword =
-        $("registerPasswordRepeat")?.value || "";
+        $("registerPasswordRepeat")
+            ?.value || "";
+
 
     if (!username || !password) {
 
@@ -594,7 +737,11 @@ async function registerUser(event) {
         return;
     }
 
-    if (password !== repeatPassword) {
+
+    if (
+        password !==
+        repeatPassword
+    ) {
 
         showAuthMessage(
             "registerMessage",
@@ -604,6 +751,7 @@ async function registerUser(event) {
         return;
     }
 
+
     try {
 
         const response =
@@ -611,20 +759,23 @@ async function registerUser(event) {
                 "/api/register",
                 {
                     method: "POST",
+
                     headers: {
                         "Content-Type":
                             "application/json"
                     },
-                    body:
-                        JSON.stringify({
-                            username,
-                            password
-                        })
+
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
                 }
             );
 
+
         const data =
             await response.json();
+
 
         if (!response.ok) {
 
@@ -634,11 +785,17 @@ async function registerUser(event) {
             );
         }
 
+
         currentUser = {
-            username: data.username,
+
+            username:
+                data.username,
+
             logged_in: true,
+
             is_guest: false
         };
+
 
         updateUserUI();
 
@@ -646,11 +803,14 @@ async function registerUser(event) {
 
         resetFilters();
 
+
         await loadTasks();
+
 
         alert(
             `حساب ${data.username} ساخته شد 👋 خوش اومدی`
         );
+
 
     } catch (error) {
 
@@ -658,6 +818,7 @@ async function registerUser(event) {
             "Register error:",
             error
         );
+
 
         showAuthMessage(
             "registerMessage",
@@ -667,9 +828,9 @@ async function registerUser(event) {
 }
 
 
-/* =========================================================
-   GUEST
-========================================================= */
+// =========================
+// GUEST
+// =========================
 
 async function continueAsGuest() {
 
@@ -683,8 +844,10 @@ async function continueAsGuest() {
                 }
             );
 
+
         const data =
             await response.json();
+
 
         if (!response.ok) {
 
@@ -694,11 +857,16 @@ async function continueAsGuest() {
             );
         }
 
+
         currentUser = {
+
             username: "مهمان",
+
             logged_in: false,
+
             is_guest: true
         };
+
 
         updateUserUI();
 
@@ -706,20 +874,23 @@ async function continueAsGuest() {
 
         resetFilters();
 
+
         await loadTasks();
+
 
     } catch (error) {
 
         alert(
-            "خطا: " + error.message
+            "خطا: " +
+            error.message
         );
     }
 }
 
 
-/* =========================================================
-   LOGOUT
-========================================================= */
+// =========================
+// LOGOUT
+// =========================
 
 async function logoutUser() {
 
@@ -728,8 +899,10 @@ async function logoutUser() {
             "آیا می‌خواهی از حساب خارج شوی؟"
         )
     ) {
+
         return;
     }
+
 
     try {
 
@@ -741,8 +914,10 @@ async function logoutUser() {
                 }
             );
 
+
         const data =
             await response.json();
+
 
         if (!response.ok) {
 
@@ -752,54 +927,71 @@ async function logoutUser() {
             );
         }
 
+
         currentUser = {
+
             username: "مهمان",
+
             logged_in: false,
+
             is_guest: true
         };
+
 
         updateUserUI();
 
         resetFilters();
 
+
         await loadTasks();
 
+
         alert(
-            "از حساب خارج شدی و اکنون به‌عنوان مهمان هستی"
+            "از حساب خارج شدی و اکنون به‌عنوان مهمان هستی."
         );
+
 
     } catch (error) {
 
         alert(
-            "خطا: " + error.message
+            "خطا: " +
+            error.message
         );
     }
 }
 
 
-/* =========================================================
-   TASK MODAL
-========================================================= */
+// =========================
+// TASK MODAL
+// =========================
 
 function openCreateModal() {
 
     editingTaskId = null;
 
+
     resetTaskForm();
 
     setModalMode(false);
 
+
     const modal =
         $("taskModal");
 
-    if (!modal) return;
+
+    if (!modal) {
+        return;
+    }
+
 
     modal.classList.add("active");
 
     modal.style.display = "flex";
 
+
     setTimeout(
-        () => $("title")?.focus(),
+        () =>
+            $("title")?.focus(),
         100
     );
 }
@@ -814,90 +1006,62 @@ function openEditModal(taskId) {
                 Number(taskId)
         );
 
+
     if (!task) {
 
         alert(
-            "کار مورد نظر پیدا نشد."
+            "کار پیدا نشد."
         );
 
         return;
     }
 
+
     editingTaskId =
         Number(task.id);
 
+
     setModalMode(true);
+
 
     $("title").value =
         task.title || "";
 
+
     $("description").value =
         task.description || "";
 
+
     $("priority").value =
-        task.priority || "معمولی";
+        task.priority ||
+        "معمولی";
 
 
-    if (task.due_date) {
+    $("dueDate").value =
+        task.due_date || "";
 
-        setPersianDateInput(
-            "dueDate",
-            "dueDateValue",
-            task.due_date
+
+    $("reminderAt").value =
+        convertReminderForInput(
+            task.reminder_at
         );
-
-    } else {
-
-        clearPersianDateInput(
-            "dueDate",
-            "dueDateValue"
-        );
-    }
-
-
-    if (task.reminder_at) {
-
-        const reminder =
-            parseReminderDateParts(
-                task.reminder_at
-            );
-
-        if (reminder) {
-
-            setPersianDateInput(
-                "reminderDate",
-                "reminderDateValue",
-                reminder.date
-            );
-
-            $("reminderTime").value =
-                reminder.time;
-        }
-
-    } else {
-
-        clearPersianDateInput(
-            "reminderDate",
-            "reminderDateValue"
-        );
-
-        $("reminderTime").value =
-            "";
-    }
 
 
     const result =
         $("categoryResult");
+
 
     if (result) {
 
         result.dataset.category =
             task.category || "";
 
+
         result.textContent =
             task.category
                 ? `دسته‌بندی فعلی: ${task.category}`
                 : "";
+
 
         result.classList.toggle(
             "hidden",
@@ -909,14 +1073,20 @@ function openEditModal(taskId) {
     const modal =
         $("taskModal");
 
-    if (!modal) return;
+
+    if (!modal) {
+        return;
+    }
+
 
     modal.classList.add("active");
 
     modal.style.display = "flex";
 
+
     setTimeout(
-        () => $("title")?.focus(),
+        () =>
+            $("title")?.focus(),
         100
     );
 }
@@ -927,41 +1097,54 @@ function setModalMode(isEdit) {
     const modal =
         $("taskModal");
 
-    if (!modal) return;
+
+    if (!modal) {
+        return;
+    }
+
 
     const title =
         modal.querySelector(
             ".modal-header h2"
         );
 
+
     const submit =
         modal.querySelector(
             ".submit-button"
         );
 
+
     if (isEdit) {
 
         if (title) {
+
             title.textContent =
                 "ویرایش کار";
         }
 
+
         if (submit) {
+
             submit.textContent =
                 "ذخیره تغییرات";
         }
 
-        return;
-    }
 
-    if (title) {
-        title.textContent =
-            "افزودن کار";
-    }
+    } else {
 
-    if (submit) {
-        submit.textContent =
-            "ثبت کار";
+        if (title) {
+
+            title.textContent =
+                "افزودن کار جدید";
+        }
+
+
+        if (submit) {
+
+            submit.textContent =
+                "ثبت کار";
+        }
     }
 }
 
@@ -971,19 +1154,27 @@ function closeTaskModal() {
     const modal =
         $("taskModal");
 
-    if (!modal) return;
 
-    modal.classList.remove("active");
+    if (!modal) {
+        return;
+    }
 
-    modal.style.display = "none";
+
+    modal.classList.remove(
+        "active"
+    );
+
+
+    modal.style.display =
+        "none";
+
 
     editingTaskId = null;
+
 
     resetTaskForm();
 
     setModalMode(false);
-
-    closeDatePickers();
 }
 
 
@@ -991,41 +1182,36 @@ function resetTaskForm() {
 
     $("taskForm")?.reset();
 
-    clearPersianDateInput(
-        "dueDate",
-        "dueDateValue"
-    );
-
-    clearPersianDateInput(
-        "reminderDate",
-        "reminderDateValue"
-    );
-
-    if ($("reminderTime")) {
-        $("reminderTime").value = "";
-    }
 
     const result =
         $("categoryResult");
 
-    if (!result) return;
+
+    if (!result) {
+        return;
+    }
+
 
     result.textContent = "";
 
-    result.classList.add("hidden");
+    result.classList.add(
+        "hidden"
+    );
+
 
     delete result.dataset.category;
 }
 
 
-/* =========================================================
-   LOAD & RENDER TASKS
-========================================================= */
+// =========================
+// LOAD TASKS
+// =========================
 
 async function loadTasks() {
 
     const response =
         await fetch("/api/tasks");
+
 
     if (!response.ok) {
 
@@ -1034,27 +1220,43 @@ async function loadTasks() {
         );
     }
 
+
     allTasks =
         await response.json();
+
 
     renderTasks(allTasks);
 
     updateDashboard(allTasks);
 
     renderReminders(allTasks);
+
+
+    // بعد از دریافت کارها،
+    // یادآوری‌ها را بلافاصله بررسی کن
+    checkRemindersNow();
 }
 
+
+// =========================
+// RENDER TASKS
+// =========================
 
 function renderTasks(tasks) {
 
     const list =
         $("taskList");
 
-    if (!list) return;
+
+    if (!list) {
+        return;
+    }
+
 
     if (!tasks.length) {
 
         list.innerHTML = `
+
             <div class="empty-state">
 
                 <div class="empty-icon">
@@ -1062,28 +1264,34 @@ function renderTasks(tasks) {
                 </div>
 
                 <h3>
-                    هنوز کاری وارد نکردی
+                    هنوز کاری نداری
                 </h3>
 
                 <p>
-                    برای ایجاد یک برنامه روی افزودن کار جدید بزن.
+                    برای ایجاد یک کار جدید
+                    روی «افزودن کار» بزن.
                 </p>
 
             </div>
         `;
 
+
         return;
     }
 
+
     list.innerHTML = "";
+
 
     tasks.forEach(task => {
 
         const card =
             document.createElement("div");
 
+
         card.className =
             "task-card";
+
 
         card.innerHTML = `
 
@@ -1095,37 +1303,47 @@ function renderTasks(tasks) {
                         ${escapeHtml(task.title)}
                     </h3>
 
-                    <span class="status-badge ${getStatusClass(task.status)}">
+                    <span
+                        class="status-badge ${getStatusClass(task.status)}"
+                    >
                         ${escapeHtml(task.status)}
                     </span>
 
                 </div>
 
+
                 <p class="task-description">
+
                     ${escapeHtml(
                         task.description || ""
                     )}
+
                 </p>
+
 
                 <div class="task-meta">
 
                     <span>
                         📁 ${escapeHtml(
-                            task.category || "عمومی"
+                            task.category ||
+                            "عمومی"
                         )}
                     </span>
 
+
                     <span>
                         ⚡ ${escapeHtml(
-                            task.priority || "معمولی"
+                            task.priority ||
+                            "معمولی"
                         )}
                     </span>
+
 
                     <span>
                         📅 ${
                             task.due_date
                                 ? escapeHtml(
-                                    formatPersianDate(
+                                    formatDateForDisplay(
                                         task.due_date
                                     )
                                 )
@@ -1133,19 +1351,19 @@ function renderTasks(tasks) {
                         }
                     </span>
 
+
                     <span>
                         🔔 ${
                             task.reminder_at
-                                ? escapeHtml(
-                                    formatReminder(
-                                        task.reminder_at
-                                    )
+                                ? formatReminder(
+                                    task.reminder_at
                                 )
                                 : "بدون یادآوری"
                         }
                     </span>
 
                 </div>
+
 
                 <div class="task-actions">
 
@@ -1156,12 +1374,14 @@ function renderTasks(tasks) {
                         تغییر وضعیت
                     </button>
 
+
                     <button
                         type="button"
                         class="edit-task-button"
                     >
                         ویرایش
                     </button>
+
 
                     <button
                         type="button"
@@ -1223,21 +1443,31 @@ function renderTasks(tasks) {
 
 function getStatusClass(status) {
 
-    if (status === "انجام شده") {
+    if (
+        status ===
+        "انجام شده"
+    ) {
+
         return "status-completed";
     }
 
-    if (status === "در حال انجام") {
+
+    if (
+        status ===
+        "در حال انجام"
+    ) {
+
         return "status-progress";
     }
+
 
     return "status-pending";
 }
 
 
-/* =========================================================
-   DASHBOARD
-========================================================= */
+// =========================
+// DASHBOARD
+// =========================
 
 function updateDashboard(tasks) {
 
@@ -1246,6 +1476,7 @@ function updateDashboard(tasks) {
         $("totalTasks").textContent =
             tasks.length;
     }
+
 
     if ($("inProgressTasks")) {
 
@@ -1257,6 +1488,7 @@ function updateDashboard(tasks) {
             ).length;
     }
 
+
     if ($("completedTasks")) {
 
         $("completedTasks").textContent =
@@ -1266,6 +1498,7 @@ function updateDashboard(tasks) {
                     "انجام شده"
             ).length;
     }
+
 
     if ($("reminderTasks")) {
 
@@ -1277,34 +1510,42 @@ function updateDashboard(tasks) {
 }
 
 
-/* =========================================================
-   CREATE / UPDATE
-========================================================= */
+// =========================
+// FORM
+// =========================
 
 async function handleTaskSubmit(event) {
 
     event.preventDefault();
 
+
     const title =
-        $("title")?.value.trim();
+        $("title")
+            ?.value
+            .trim();
+
 
     if (!title) {
 
         alert(
-            "عنوان رو وارد کن."
+            "عنوان کار را وارد کن."
         );
 
         return;
     }
 
+
     const result =
         $("categoryResult");
+
 
     let category =
         result?.dataset.category;
 
 
-    if (editingTaskId !== null) {
+    if (
+        editingTaskId !== null
+    ) {
 
         const oldTask =
             allTasks.find(
@@ -1313,47 +1554,71 @@ async function handleTaskSubmit(event) {
                     Number(editingTaskId)
             );
 
+
         category =
             category ||
             oldTask?.category ||
             "تعیین نشده";
+
 
         await updateTask(
             editingTaskId,
             category
         );
 
+
         return;
     }
 
 
     await createTask(
-        category || "تعیین نشده"
+        category ||
+        "تعیین نشده"
     );
 }
 
+
+// =========================
+// CREATE
+// =========================
 
 function getTaskFormData(category) {
 
     return {
 
         title:
-            $("title")?.value.trim() || "",
+            $("title")
+                ?.value
+                .trim() || "",
+
 
         description:
-            $("description")?.value.trim() || "",
+            $("description")
+                ?.value
+                .trim() || "",
+
 
         priority:
-            $("priority")?.value ||
+            $("priority")
+                ?.value ||
             "معمولی",
+
 
         category,
 
+
         due_date:
-            $("dueDateValue")?.value || null,
+            normalizeDateToGregorian(
+                $("dueDate")
+                    ?.value ||
+                ""
+            ),
+
 
         reminder_at:
-            getReminderValue()
+            $("reminderAt")
+                ?.value ||
+            null
     };
 }
 
@@ -1373,29 +1638,33 @@ async function createTask(category) {
                             "application/json"
                     },
 
-                    body:
-                        JSON.stringify(
-                            getTaskFormData(
-                                category
-                            )
+                    body: JSON.stringify(
+                        getTaskFormData(
+                            category
                         )
+                    )
                 }
             );
 
+
         const data =
             await response.json();
+
 
         if (!response.ok) {
 
             throw new Error(
                 data.error ||
-                "ثبت انجام نشد."
+                "ثبت کار انجام نشد."
             );
         }
 
+
         closeTaskModal();
 
+
         await loadTasks();
+
 
     } catch (error) {
 
@@ -1404,6 +1673,7 @@ async function createTask(category) {
             error
         );
 
+
         alert(
             "خطا: " +
             error.message
@@ -1411,6 +1681,10 @@ async function createTask(category) {
     }
 }
 
+
+// =========================
+// UPDATE
+// =========================
 
 async function updateTask(
     taskId,
@@ -1440,8 +1714,9 @@ async function updateTask(
                             "application/json"
                     },
 
-                    body:
-                        JSON.stringify(data)
+                    body: JSON.stringify(
+                        data
+                    )
                 }
             );
 
@@ -1461,7 +1736,9 @@ async function updateTask(
 
         closeTaskModal();
 
+
         await loadTasks();
+
 
     } catch (error) {
 
@@ -1469,6 +1746,7 @@ async function updateTask(
             "Update task error:",
             error
         );
+
 
         alert(
             "خطا: " +
@@ -1478,23 +1756,27 @@ async function updateTask(
 }
 
 
-/* =========================================================
-   AI
-========================================================= */
+// =========================
+// AI
+// =========================
 
 async function predictCategory() {
 
     const title =
-        $("title")?.value.trim();
+        $("title")
+            ?.value
+            .trim();
+
 
     if (!title) {
 
         showCategoryMessage(
-            "ابتدا عنوان را وارد کن."
+            "ابتدا عنوان کار را وارد کن."
         );
 
         return;
     }
+
 
     showCategoryMessage(
         "در حال پیش‌بینی..."
@@ -1514,10 +1796,9 @@ async function predictCategory() {
                             "application/json"
                     },
 
-                    body:
-                        JSON.stringify({
-                            title
-                        })
+                    body: JSON.stringify({
+                        title
+                    })
                 }
             );
 
@@ -1551,6 +1832,7 @@ async function predictCategory() {
             "hidden"
         );
 
+
     } catch (error) {
 
         showCategoryMessage(
@@ -1566,10 +1848,15 @@ function showCategoryMessage(message) {
     const result =
         $("categoryResult");
 
-    if (!result) return;
+
+    if (!result) {
+        return;
+    }
+
 
     result.textContent =
         message;
+
 
     result.classList.remove(
         "hidden"
@@ -1577,9 +1864,9 @@ function showCategoryMessage(message) {
 }
 
 
-/* =========================================================
-   STATUS
-========================================================= */
+// =========================
+// STATUS
+// =========================
 
 async function changeTaskStatus(
     taskId,
@@ -1606,7 +1893,9 @@ async function changeTaskStatus(
 
 
     const nextStatus =
-        options.statuses[nextIndex];
+        options.statuses[
+            nextIndex
+        ];
 
 
     try {
@@ -1622,11 +1911,10 @@ async function changeTaskStatus(
                             "application/json"
                     },
 
-                    body:
-                        JSON.stringify({
-                            task_id: taskId,
-                            status: nextStatus
-                        })
+                    body: JSON.stringify({
+                        task_id: taskId,
+                        status: nextStatus
+                    })
                 }
             );
 
@@ -1646,6 +1934,7 @@ async function changeTaskStatus(
 
         await loadTasks();
 
+
     } catch (error) {
 
         alert(
@@ -1656,9 +1945,9 @@ async function changeTaskStatus(
 }
 
 
-/* =========================================================
-   DELETE
-========================================================= */
+// =========================
+// DELETE
+// =========================
 
 async function deleteTask(taskId) {
 
@@ -1667,6 +1956,7 @@ async function deleteTask(taskId) {
             "آیا از حذف کردنش مطمئن هستی؟"
         )
     ) {
+
         return;
     }
 
@@ -1684,10 +1974,9 @@ async function deleteTask(taskId) {
                             "application/json"
                     },
 
-                    body:
-                        JSON.stringify({
-                            task_id: taskId
-                        })
+                    body: JSON.stringify({
+                        task_id: taskId
+                    })
                 }
             );
 
@@ -1700,27 +1989,13 @@ async function deleteTask(taskId) {
 
             throw new Error(
                 data.error ||
-                "حذف انجام نشد."
+                "حذف کار انجام نشد."
             );
         }
 
 
-        [...notifiedReminders]
-            .filter(
-                key =>
-                    key.startsWith(
-                        `${taskId}-`
-                    )
-            )
-            .forEach(
-                key =>
-                    notifiedReminders.delete(
-                        key
-                    )
-            );
-
-
         await loadTasks();
+
 
     } catch (error) {
 
@@ -1728,6 +2003,7 @@ async function deleteTask(taskId) {
             "Delete error:",
             error
         );
+
 
         alert(
             "خطا: " +
@@ -1737,32 +2013,42 @@ async function deleteTask(taskId) {
 }
 
 
-/* =========================================================
-   FILTERS
-========================================================= */
+// =========================
+// FILTERS
+// =========================
 
 function applyFilters() {
 
     const search =
-        $("taskSearch")?.value
+        $("taskSearch")
+            ?.value
             .trim()
-            .toLowerCase() || "";
+            .toLowerCase() ||
+        "";
 
 
     const category =
-        $("categoryFilter")?.value || "";
+        $("categoryFilter")
+            ?.value ||
+        "";
 
 
     const priority =
-        $("priorityFilter")?.value || "";
+        $("priorityFilter")
+            ?.value ||
+        "";
 
 
     const status =
-        $("statusFilter")?.value || "";
+        $("statusFilter")
+            ?.value ||
+        "";
 
 
     const dueDate =
-        $("dueDateFilter")?.value || "";
+        $("dueDateFilter")
+            ?.value ||
+        "";
 
 
     const filtered =
@@ -1771,7 +2057,9 @@ function applyFilters() {
             const text = [
 
                 task.title,
+
                 task.description,
+
                 task.category
 
             ]
@@ -1784,30 +2072,37 @@ function applyFilters() {
                 search &&
                 !text.includes(search)
             ) {
+
                 return false;
             }
 
 
             if (
                 category &&
-                task.category !== category
+                task.category !==
+                category
             ) {
+
                 return false;
             }
 
 
             if (
                 priority &&
-                task.priority !== priority
+                task.priority !==
+                priority
             ) {
+
                 return false;
             }
 
 
             if (
                 status &&
-                task.status !== status
+                task.status !==
+                status
             ) {
+
                 return false;
             }
 
@@ -1819,6 +2114,7 @@ function applyFilters() {
                     dueDate
                 )
             ) {
+
                 return false;
             }
 
@@ -1838,23 +2134,27 @@ function applyFilters() {
 function resetFilters() {
 
     [
+
         "taskSearch",
         "categoryFilter",
         "priorityFilter",
         "statusFilter",
         "dueDateFilter"
+
     ].forEach(id => {
 
         if ($(id)) {
+
             $(id).value = "";
         }
+
     });
 }
 
 
-/* =========================================================
-   DUE DATE FILTER
-========================================================= */
+// =========================
+// DUE DATE
+// =========================
 
 function checkDueDate(
     value,
@@ -1870,6 +2170,7 @@ function checkDueDate(
     const today =
         new Date();
 
+
     today.setHours(
         0,
         0,
@@ -1879,15 +2180,14 @@ function checkDueDate(
 
 
     const date =
-        parseDatabaseDate(value);
+        new Date(
+            `${value}T00:00:00`
+        );
 
 
-    if (!date) {
-        return false;
-    }
-
-
-    if (filter === "today") {
+    if (
+        filter === "today"
+    ) {
 
         return (
             date.getTime() ===
@@ -1896,7 +2196,9 @@ function checkDueDate(
     }
 
 
-    if (filter === "upcoming") {
+    if (
+        filter === "upcoming"
+    ) {
 
         return date > today;
     }
@@ -1906,11 +2208,13 @@ function checkDueDate(
 }
 
 
-/* =========================================================
-   REMINDERS
-========================================================= */
+// =========================
+// REMINDERS
+// =========================
 
-function getUpcomingReminders(tasks) {
+function getUpcomingReminders(
+    tasks
+) {
 
     const now =
         new Date();
@@ -1937,6 +2241,7 @@ function getUpcomingReminders(tasks) {
             task.status ===
             "انجام شده"
         ) {
+
             return false;
         }
 
@@ -1948,26 +2253,45 @@ function getUpcomingReminders(tasks) {
 
 
         return (
+
             reminder &&
+
             reminder >= now &&
+
             reminder <= limit
+
         );
+
     });
 }
 
 
-function parseReminderDate(value) {
+function parseReminderDate(
+    value
+) {
 
-    if (!value) return null;
+    if (!value) {
+        return null;
+    }
+
 
     const normalized =
         String(value)
-            .trim()
             .replace(" ", "T");
 
 
+    if (
+        !normalized.includes("T")
+    ) {
+
+        return null;
+    }
+
+
     const date =
-        new Date(normalized);
+        new Date(
+            normalized
+        );
 
 
     return Number.isNaN(
@@ -1978,40 +2302,38 @@ function parseReminderDate(value) {
 }
 
 
-function parseReminderDateParts(value) {
+function convertReminderForInput(
+    value
+) {
 
-    if (!value) return null;
+    if (!value) {
+        return "";
+    }
 
 
     const normalized =
         String(value)
-            .trim()
             .replace(" ", "T");
 
 
-    const match =
-        normalized.match(
-            /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/
-        );
-
-
-    if (!match) {
-        return null;
-    }
-
-
-    return {
-        date: match[1],
-        time: match[2]
-    };
+    return normalized.length >= 16
+        ? normalized.substring(
+            0,
+            16
+        )
+        : normalized;
 }
 
 
-/* =========================================================
-   REMINDER CHECKER
-========================================================= */
+// =========================
+// IN-SITE REMINDER CHECKER
+// =========================
 
 function startReminderChecker() {
+
+    // یک بار همین الان بررسی کن
+    checkRemindersNow();
+
 
     if (reminderCheckInterval) {
 
@@ -2021,23 +2343,22 @@ function startReminderChecker() {
     }
 
 
-    checkReminders();
-
-
+    // بعد از آن هر ۳۰ ثانیه
     reminderCheckInterval =
         setInterval(
-            checkReminders,
-            10000
+            checkRemindersNow,
+            REMINDER_CHECK_INTERVAL
         );
 }
 
 
-function checkReminders() {
+function checkRemindersNow() {
 
     if (
         !Array.isArray(allTasks) ||
         !allTasks.length
     ) {
+
         return;
     }
 
@@ -2057,6 +2378,7 @@ function checkReminders() {
             task.status ===
             "انجام شده"
         ) {
+
             return;
         }
 
@@ -2073,111 +2395,249 @@ function checkReminders() {
 
 
         const reminderKey =
-            `${task.id}-${task.reminder_at}`;
+            `${task.id}_${task.reminder_at}`;
 
 
+        // قبلاً نمایش داده شده
         if (
-            reminderDate <= now &&
-            !notifiedReminders.has(
+            notifiedReminders.has(
                 reminderKey
             )
         ) {
 
-            notifiedReminders.add(
-                reminderKey
-            );
+            return;
+        }
 
+
+        // زمان یادآوری رسیده
+        if (
+            reminderDate <= now
+        ) {
 
             showReminderNotification(
                 task
             );
+
+
+            notifiedReminders.add(
+                reminderKey
+            );
         }
+
     });
 }
 
 
-/* =========================================================
-   NOTIFICATIONS
-========================================================= */
+// =========================
+// NOTIFICATION
+// =========================
 
-async function requestNotificationPermission() {
+function addReminderNotificationStyles() {
 
     if (
-        !("Notification" in window)
+        $("reminderNotificationStyles")
     ) {
+
         return;
     }
 
 
-    if (
-        Notification.permission ===
-        "default"
-    ) {
-
-        try {
-
-            await Notification.requestPermission();
-
-        } catch (error) {
-
-            console.error(
-                "Notification permission error:",
-                error
-            );
-        }
-    }
-}
-
-
-function showReminderNotification(task) {
-
-    const reminderText =
-        formatReminder(
-            task.reminder_at
+    const style =
+        document.createElement(
+            "style"
         );
 
 
-    showSiteNotification(
-        "🔔 زمان یادآوری رسید",
-        `${task.title} — ${reminderText}`
-    );
+    style.id =
+        "reminderNotificationStyles";
 
 
-    if (
-        "Notification" in window &&
-        Notification.permission ===
-        "granted"
-    ) {
+    style.textContent = `
 
-        try {
+        @keyframes reminderSlideIn {
 
-            new Notification(
-                "🔔 یادآوری SmarTask",
-                {
-                    body:
-                        `${task.title}\nزمان انجام این کار رسیده است.`,
+            from {
+                opacity: 0;
+                transform:
+                    translateX(35px);
+            }
 
-                    tag:
-                        `smarttask-reminder-${task.id}`,
-
-                    renotify: false
-                }
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Browser notification error:",
-                error
-            );
+            to {
+                opacity: 1;
+                transform:
+                    translateX(0);
+            }
         }
-    }
+
+
+        @keyframes reminderSlideOut {
+
+            from {
+                opacity: 1;
+                transform:
+                    translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform:
+                    translateX(35px);
+            }
+        }
+
+
+        #notificationContainer {
+
+            position: fixed;
+
+            top: 20px;
+
+            right: 20px;
+
+            z-index: 99999;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 12px;
+
+            width:
+                min(
+                    380px,
+                    calc(100vw - 40px)
+                );
+
+            direction: rtl;
+
+            pointer-events: none;
+        }
+
+
+        .site-reminder-notification {
+
+            pointer-events: auto;
+
+            position: relative;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 15px 16px;
+
+            background: #fffaf3;
+
+            border:
+                1px solid
+                #d8b08c;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 10px 30px
+                rgba(0, 0, 0, .18);
+
+            animation:
+                reminderSlideIn
+                .35s ease;
+
+            font-family: inherit;
+        }
+
+
+        .site-reminder-icon {
+
+            font-size: 28px;
+
+            flex-shrink: 0;
+        }
+
+
+        .site-reminder-content {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 5px;
+
+            flex: 1;
+
+            min-width: 0;
+        }
+
+
+        .site-reminder-content strong {
+
+            color: #5b2525;
+
+            font-size: 15px;
+        }
+
+
+        .site-reminder-content span {
+
+            color: #6f6258;
+
+            font-size: 14px;
+
+            line-height: 1.6;
+
+            word-break: break-word;
+        }
+
+
+        .site-reminder-close {
+
+            border: none;
+
+            background: transparent;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+            color: #8a7770;
+
+            padding: 0 4px;
+
+            line-height: 1;
+        }
+
+
+        .site-reminder-close:hover {
+
+            color: #5b2525;
+        }
+
+
+        @media (max-width: 600px) {
+
+            #notificationContainer {
+
+                top: 10px !important;
+
+                right: 10px !important;
+
+                width:
+                    calc(100vw - 20px)
+                    !important;
+            }
+        }
+    `;
+
+
+    document.head.appendChild(
+        style
+    );
 }
 
 
-function showSiteNotification(
-    title,
-    message
+function showReminderNotification(
+    task
 ) {
 
     let container =
@@ -2187,27 +2647,13 @@ function showSiteNotification(
     if (!container) {
 
         container =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         container.id =
             "notificationContainer";
-
-
-        Object.assign(
-            container.style,
-            {
-                position: "fixed",
-                top: "20px",
-                right: "20px",
-                left: "20px",
-                zIndex: "99999",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                gap: "10px",
-                pointerEvents: "none"
-            }
-        );
 
 
         document.body.appendChild(
@@ -2217,58 +2663,67 @@ function showSiteNotification(
 
 
     const notification =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
-    Object.assign(
-        notification.style,
-        {
-            width: "min(360px, 100%)",
-            boxSizing: "border-box",
-            background: "#fff",
-            color: "#3b2520",
-            padding: "16px 18px",
-            borderRadius: "14px",
-            boxShadow:
-                "0 8px 30px rgba(0,0,0,0.18)",
-            border:
-                "1px solid #e5d5cc",
-            cursor: "pointer",
-            pointerEvents: "auto",
-            direction: "rtl"
-        }
-    );
+    notification.className =
+        "site-reminder-notification";
 
 
     notification.innerHTML = `
 
-        <div style="
-            font-weight:700;
-            font-size:16px;
-        ">
-            ${escapeHtml(title)}
+        <div class="site-reminder-icon">
+            🔔
         </div>
 
-        <div style="
-            margin-top:7px;
-            line-height:1.7;
-        ">
-            ${escapeHtml(message)}
+
+        <div class="site-reminder-content">
+
+            <strong>
+                وقت یادآوری رسید
+            </strong>
+
+            <span>
+                ${escapeHtml(
+                    task.title
+                )}
+            </span>
+
         </div>
 
-        <div style="
-            margin-top:10px;
-            font-size:12px;
-            opacity:.6;
-        ">
-            برای بستن کلیک کن
-        </div>
+
+        <button
+            type="button"
+            class="site-reminder-close"
+            aria-label="بستن"
+        >
+            ×
+        </button>
     `;
 
 
-    notification.addEventListener(
+    const closeButton =
+        notification.querySelector(
+            ".site-reminder-close"
+        );
+
+
+    closeButton?.addEventListener(
         "click",
-        () => notification.remove()
+        () => {
+
+            notification.style.animation =
+                "reminderSlideOut .25s ease";
+
+
+            setTimeout(
+                () =>
+                    notification.remove(),
+                250
+            );
+        }
     );
 
 
@@ -2277,31 +2732,46 @@ function showSiteNotification(
     );
 
 
+    // بعد از ۸ ثانیه خودکار بسته شود
     setTimeout(
         () => {
 
             if (
-                notification.parentNode
+                notification.isConnected
             ) {
-                notification.remove();
+
+                notification.style.animation =
+                    "reminderSlideOut .25s ease";
+
+
+                setTimeout(
+                    () =>
+                        notification.remove(),
+                    250
+                );
             }
 
         },
-        10000
+        8000
     );
 }
 
 
-/* =========================================================
-   REMINDER LIST
-========================================================= */
+// =========================
+// RENDER REMINDERS
+// =========================
 
-function renderReminders(tasks) {
+function renderReminders(
+    tasks
+) {
 
     const list =
         $("reminderList");
 
-    if (!list) return;
+
+    if (!list) {
+        return;
+    }
 
 
     const reminders =
@@ -2327,6 +2797,7 @@ function renderReminders(tasks) {
 
             </div>
         `;
+
 
         return;
     }
@@ -2363,6 +2834,7 @@ function renderReminders(tasks) {
                     🔔
                 </div>
 
+
                 <div class="reminder-info">
 
                     <strong>
@@ -2372,10 +2844,8 @@ function renderReminders(tasks) {
                     </strong>
 
                     <span>
-                        ${escapeHtml(
-                            formatReminder(
-                                task.reminder_at
-                            )
+                        ${formatReminder(
+                            task.reminder_at
                         )}
                     </span>
 
@@ -2390,182 +2860,111 @@ function renderReminders(tasks) {
 }
 
 
-/* =========================================================
-   JALALI CALENDAR
-   Accurate conversion without external packages
-========================================================= */
+// =========================
+// DATE FORMAT
+// =========================
 
-const JALALI_MONTH_NAMES = [
-    "فروردین",
-    "اردیبهشت",
-    "خرداد",
-    "تیر",
-    "مرداد",
-    "شهریور",
-    "مهر",
-    "آبان",
-    "آذر",
-    "دی",
-    "بهمن",
-    "اسفند"
-];
-
-
-const JALALI_WEEKDAYS = [
-    "شنبه",
-    "یکشنبه",
-    "دوشنبه",
-    "سه‌شنبه",
-    "چهارشنبه",
-    "پنجشنبه",
-    "جمعه"
-];
-
-
-let datePickerState = {
-    pickerId: null,
-    inputId: null,
-    valueId: null,
-    year: null,
-    month: null
-};
-
-
-/*
- * الگوریتم استاندارد تبدیل جلالی/میلادی.
- *
- * نکته:
- * هیچ تبدیل تقریبی مثل «سال + 621 و 21 مارس»
- * در اینجا استفاده نشده است.
- */
-
-
-/* =========================================================
-   GREGORIAN -> JALALI
-========================================================= */
-
-function gregorianToJalali(
-    gy,
-    gm,
-    gd
+function formatReminder(
+    value
 ) {
 
-    const gdm = [
-        0,
-        31,
-        59,
-        90,
-        120,
-        151,
-        181,
-        212,
-        243,
-        273,
-        304,
-        334
-    ];
+    if (!value) {
 
-
-    let gy2 =
-        gy + 1;
-
-
-    let days =
-        365 * gy +
-        Math.floor(
-            (gy2 + 3) / 4
-        ) -
-        Math.floor(
-            (gy2 + 99) / 100
-        ) +
-        Math.floor(
-            (gy2 + 399) / 400
-        ) -
-        80 +
-        gd +
-        gdm[gm - 1];
-
-
-    if (
-        gm > 2 &&
-        (
-            gy % 4 === 0 &&
-            (
-                gy % 100 !== 0 ||
-                gy % 400 === 0
-            )
-        )
-    ) {
-
-        days++;
+        return "بدون یادآوری";
     }
 
 
-    let jy =
-        979 +
-        33 *
-        Math.floor(
-            days / 12053
+    const date =
+        parseReminderDate(
+            value
         );
 
 
-    days %= 12053;
+    if (!date) {
 
-
-    jy +=
-        4 *
-        Math.floor(
-            days / 1461
-        );
-
-
-    days %= 1461;
-
-
-    if (days > 365) {
-
-        jy +=
-            Math.floor(
-                (days - 1) / 365
-            );
-
-        days =
-            (days - 1) % 365;
+        return value;
     }
 
 
-    const jm =
-        days < 186
-            ? 1 +
-              Math.floor(
-                  days / 31
-              )
-            : 7 +
-              Math.floor(
-                  (days - 186) / 30
-              );
-
-
-    const jd =
-        1 +
-        (
-            days < 186
-                ? days % 31
-                : (days - 186) % 30
-        );
-
-
-    return {
-        year: jy,
-        month: jm,
-        day: jd
-    };
+    return date.toLocaleString(
+        "fa-IR",
+        {
+            dateStyle: "short",
+            timeStyle: "short"
+        }
+    );
 }
 
 
-/* =========================================================
-   JALALI -> GREGORIAN
-========================================================= */
+function formatDateForDisplay(
+    value
+) {
+
+    if (!value) {
+        return "";
+    }
+
+
+    const date =
+        new Date(
+            `${value}T00:00:00`
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return value;
+    }
+
+
+    return date.toLocaleDateString(
+        "fa-IR"
+    );
+}
+
+
+// =========================
+// JALALI DATE CONVERSION
+// =========================
+
+function toEnglishDigits(
+    value
+) {
+
+    if (!value) {
+        return value;
+    }
+
+
+    return String(value)
+
+        .replace(
+            /[۰-۹]/g,
+            digit =>
+                String(
+                    "۰۱۲۳۴۵۶۷۸۹"
+                        .indexOf(
+                            digit
+                        )
+                )
+        )
+
+        .replace(
+            /[٠-٩]/g,
+            digit =>
+                String(
+                    "٠١٢٣٤٥٦٧٨٩"
+                        .indexOf(
+                            digit
+                        )
+                )
+        );
+}
+
 
 function jalaliToGregorian(
     jy,
@@ -2573,23 +2972,27 @@ function jalaliToGregorian(
     jd
 ) {
 
-    let jy2 =
-        jy - 979;
+    jy = Number(jy);
+
+    jm = Number(jm);
+
+    jd = Number(jd);
+
+
+    jy += 1595;
 
 
     let days =
-        365 * jy2 +
+        -355668 +
+        (365 * jy) +
+        Math.floor(jy / 33) * 8 +
         Math.floor(
-            jy2 / 33
-        ) * 8 +
-        Math.floor(
-            (
-                jy2 % 33 + 3
-            ) / 4
-        );
+            ((jy % 33) + 3) / 4
+        ) +
+        jd;
 
 
-    if (jm <= 6) {
+    if (jm < 7) {
 
         days +=
             (jm - 1) * 31;
@@ -2597,39 +3000,31 @@ function jalaliToGregorian(
     } else {
 
         days +=
-            (jm - 7) * 30 +
+            ((jm - 7) * 30) +
             186;
     }
 
 
-    days +=
-        jd - 1;
-
-
     let gy =
-        1600 +
         400 *
         Math.floor(
             days / 146097
         );
 
 
-    days %=
-        146097;
+    days %= 146097;
 
 
-    if (days >= 36525) {
-
-        days--;
+    if (days > 36524) {
 
         gy +=
             100 *
             Math.floor(
-                days / 36524
+                --days / 36524
             );
 
-        days %=
-            36524;
+
+        days %= 36524;
 
 
         if (days >= 365) {
@@ -2645,195 +3040,94 @@ function jalaliToGregorian(
         );
 
 
-    days %=
-        1461;
+    days %= 1461;
 
 
-    if (days >= 366) {
+    if (days > 365) {
 
         gy +=
             Math.floor(
                 (days - 1) / 365
             );
 
+
         days =
             (days - 1) % 365;
     }
 
 
-    const gd =
+    let gd =
         days + 1;
 
 
     const leap =
         (
             gy % 4 === 0 &&
-            (
-                gy % 100 !== 0 ||
-                gy % 400 === 0
-            )
-        );
+            gy % 100 !== 0
+        ) ||
+        gy % 400 === 0;
 
 
-    const gDays = [
+    const monthDays = [
+
         31,
-        leap ? 29 : 28,
+
+        leap
+            ? 29
+            : 28,
+
         31,
+
         30,
+
         31,
+
         30,
+
         31,
+
         31,
+
         30,
+
         31,
+
         30,
+
         31
     ];
 
 
     let gm = 1;
 
-    let remaining =
-        gd;
-
 
     while (
-        remaining >
-        gDays[gm - 1]
+        gm <= 12 &&
+        gd >
+        monthDays[gm - 1]
     ) {
 
-        remaining -=
-            gDays[gm - 1];
+        gd -=
+            monthDays[
+                gm - 1
+            ];
 
         gm++;
     }
 
 
     return {
+
         year: gy,
+
         month: gm,
-        day: remaining
+
+        day: gd
     };
 }
 
 
-/* =========================================================
-   JALALI LEAP YEAR
-========================================================= */
-
-function isJalaliLeap(year) {
-
-    /*
-     * همان چرخه‌ای که در تبدیل استاندارد
-     * بالا استفاده شده است.
-     */
-
-    const current =
-        jalaliToGregorian(
-            year,
-            1,
-            1
-        );
-
-    const next =
-        jalaliToGregorian(
-            year + 1,
-            1,
-            1
-        );
-
-
-    const currentDate =
-        new Date(
-            current.year,
-            current.month - 1,
-            current.day
-        );
-
-
-    const nextDate =
-        new Date(
-            next.year,
-            next.month - 1,
-            next.day
-        );
-
-
-    const difference =
-        Math.round(
-            (
-                nextDate -
-                currentDate
-            ) /
-            86400000
-        );
-
-
-    return difference === 366;
-}
-
-
-/* =========================================================
-   JALALI DAYS IN MONTH
-========================================================= */
-
-function getJalaliDaysInMonth(
-    year,
-    month
-) {
-
-    if (month <= 6) {
-        return 31;
-    }
-
-    if (month <= 11) {
-        return 30;
-    }
-
-    return isJalaliLeap(year)
-        ? 30
-        : 29;
-}
-
-
-/* =========================================================
-   DATE HELPERS
-========================================================= */
-
-function pad2(value) {
-
-    return String(value)
-        .padStart(2, "0");
-}
-
-
-function toPersianDigits(value) {
-
-    return String(value)
-        .replace(
-            /\d/g,
-            digit =>
-                "۰۱۲۳۴۵۶۷۸۹"[
-                    Number(digit)
-                ]
-        );
-}
-
-
-function toEnglishDigits(value) {
-
-    return String(value)
-        .replace(
-            /[۰-۹]/g,
-            digit =>
-                "۰۱۲۳۴۵۶۷۸۹".indexOf(
-                    digit
-                )
-        );
-}
-
-
-function parseDatabaseDate(
+function normalizeDateToGregorian(
     value
 ) {
 
@@ -2842,922 +3136,92 @@ function parseDatabaseDate(
     }
 
 
-    const match =
-        String(value).match(
-            /^(\d{4})-(\d{1,2})-(\d{1,2})$/
-        );
-
-
-    if (!match) {
-        return null;
-    }
-
-
-    const year =
-        Number(match[1]);
-
-    const month =
-        Number(match[2]);
-
-    const day =
-        Number(match[3]);
-
-
-    const date =
-        new Date(
-            year,
-            month - 1,
-            day
-        );
-
-
-    if (
-        date.getFullYear() !== year ||
-        date.getMonth() !== month - 1 ||
-        date.getDate() !== day
-    ) {
-        return null;
-    }
-
-
-    date.setHours(
-        0,
-        0,
-        0,
-        0
-    );
-
-
-    return date;
-}
-
-
-function formatPersianDate(
-    value
-) {
-
-    const date =
-        parseDatabaseDate(
+    let date =
+        toEnglishDigits(
             value
-        );
-
-
-    if (!date) {
-        return value || "";
-    }
-
-
-    const jalali =
-        gregorianToJalali(
-            date.getFullYear(),
-            date.getMonth() + 1,
-            date.getDate()
-        );
-
-
-    return toPersianDigits(
-        `${jalali.year}/${pad2(jalali.month)}/${pad2(jalali.day)}`
-    );
-}
-
-
-function formatReminder(
-    value
-) {
-
-    if (!value) {
-        return "بدون یادآوری";
-    }
+        )
+            .trim()
+            .replace(
+                /\//g,
+                "-"
+            );
 
 
     const parts =
-        parseReminderDateParts(
-            value
-        );
+        date.split("-");
 
 
-    if (!parts) {
+    if (
+        parts.length !== 3
+    ) {
+
         return value;
     }
 
 
-    return (
-        formatPersianDate(
-            parts.date
-        ) +
-        " - " +
-        toPersianDigits(
-            parts.time
-        )
-    );
-}
+    const year =
+        Number(parts[0]);
 
 
-/* =========================================================
-   PERSIAN DATE PICKER
-========================================================= */
-
-function initializeDatePickers() {
-
-    $("openDueDatePicker")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                openPersianDatePicker(
-                    "dueDatePicker",
-                    "dueDate",
-                    "dueDateValue"
-                );
-            }
-        );
+    const month =
+        Number(parts[1]);
 
 
-    $("openReminderDatePicker")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                openPersianDatePicker(
-                    "reminderDatePicker",
-                    "reminderDate",
-                    "reminderDateValue"
-                );
-            }
-        );
-
-
-    $("dueDate")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                openPersianDatePicker(
-                    "dueDatePicker",
-                    "dueDate",
-                    "dueDateValue"
-                );
-            }
-        );
-
-
-    $("reminderDate")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                openPersianDatePicker(
-                    "reminderDatePicker",
-                    "reminderDate",
-                    "reminderDateValue"
-                );
-            }
-        );
-
-
-    document.addEventListener(
-        "click",
-        event => {
-
-            const duePicker =
-                $("dueDatePicker");
-
-            const reminderPicker =
-                $("reminderDatePicker");
-
-
-            if (
-                duePicker &&
-                !duePicker.contains(
-                    event.target
-                ) &&
-                event.target !==
-                    $("dueDate") &&
-                event.target !==
-                    $("openDueDatePicker")
-            ) {
-
-                duePicker.classList.add(
-                    "hidden"
-                );
-            }
-
-
-            if (
-                reminderPicker &&
-                !reminderPicker.contains(
-                    event.target
-                ) &&
-                event.target !==
-                    $("reminderDate") &&
-                event.target !==
-                    $("openReminderDatePicker")
-            ) {
-
-                reminderPicker.classList.add(
-                    "hidden"
-                );
-            }
-        }
-    );
-}
-
-
-/* =========================================================
-   OPEN CALENDAR
-========================================================= */
-
-function openPersianDatePicker(
-    pickerId,
-    inputId,
-    valueId
-) {
-
-    const picker =
-        $(pickerId);
-
-    if (!picker) return;
-
-
-    closeDatePickers();
-
-
-    let year = null;
-    let month = null;
-
-
-    const existing =
-        $(valueId)?.value || "";
-
-
-    if (existing) {
-
-        const date =
-            parseDatabaseDate(
-                existing
-            );
-
-
-        if (date) {
-
-            const jalali =
-                gregorianToJalali(
-                    date.getFullYear(),
-                    date.getMonth() + 1,
-                    date.getDate()
-                );
-
-
-            year =
-                jalali.year;
-
-            month =
-                jalali.month;
-        }
-    }
+    const day =
+        Number(parts[2]);
 
 
     if (
         !year ||
-        !month
+        !month ||
+        !day
     ) {
 
-        const today =
-            new Date();
-
-
-        const jalali =
-            gregorianToJalali(
-                today.getFullYear(),
-                today.getMonth() + 1,
-                today.getDate()
-            );
-
-
-        year =
-            jalali.year;
-
-        month =
-            jalali.month;
+        return value;
     }
 
 
-    datePickerState = {
-        pickerId,
-        inputId,
-        valueId,
-        year,
-        month
-    };
-
-
-    renderPersianCalendar(
-        picker,
-        year,
-        month
-    );
-
-
-    picker.classList.remove(
-        "hidden"
-    );
-}
-
-
-/* =========================================================
-   CLOSE CALENDARS
-========================================================= */
-
-function closeDatePickers() {
-
-    $("dueDatePicker")
-        ?.classList.add("hidden");
-
-    $("reminderDatePicker")
-        ?.classList.add("hidden");
-}
-
-
-/* =========================================================
-   RENDER CALENDAR
-========================================================= */
-
-function renderPersianCalendar(
-    picker,
-    year,
-    month
-) {
-
-    const firstGregorian =
-        jalaliToGregorian(
-            year,
-            month,
-            1
-        );
-
-
-    const firstDate =
-        new Date(
-            firstGregorian.year,
-            firstGregorian.month - 1,
-            firstGregorian.day
-        );
-
-
-    /*
-     * JavaScript:
-     * Sunday = 0
-     * Monday = 1
-     * ...
-     * Saturday = 6
-     *
-     * تقویم فارسی از شنبه شروع می‌شود.
-     */
-
-    const firstWeekDay =
-        firstDate.getDay() === 6
-            ? 0
-            : firstDate.getDay() + 1;
-
-
-    const daysInMonth =
-        getJalaliDaysInMonth(
-            year,
-            month
-        );
-
-
-    const today =
-        new Date();
-
-
-    const todayJalali =
-        gregorianToJalali(
-            today.getFullYear(),
-            today.getMonth() + 1,
-            today.getDate()
-        );
-
-
-    const selectedValue =
-        datePickerState.valueId
-            ? $(
-                datePickerState.valueId
-              )?.value
-            : "";
-
-
-    let selectedJalali =
-        null;
-
-
-    if (selectedValue) {
-
-        const selectedDate =
-            parseDatabaseDate(
-                selectedValue
-            );
-
-
-        if (selectedDate) {
-
-            selectedJalali =
-                gregorianToJalali(
-                    selectedDate.getFullYear(),
-                    selectedDate.getMonth() + 1,
-                    selectedDate.getDate()
-                );
-        }
-    }
-
-
-    let html = `
-
-        <div class="persian-calendar">
-
-            <div class="persian-calendar-header">
-
-                <button
-                    type="button"
-                    class="calendar-nav-button"
-                    data-calendar-prev
-                    aria-label="ماه قبل"
-                >
-                    ‹
-                </button>
-
-                <div class="calendar-header-title">
-                    <strong>
-                        ${JALALI_MONTH_NAMES[month - 1]}
-                    </strong>
-
-                    <span>
-                        ${toPersianDigits(year)}
-                    </span>
-                </div>
-
-                <button
-                    type="button"
-                    class="calendar-nav-button"
-                    data-calendar-next
-                    aria-label="ماه بعد"
-                >
-                    ›
-                </button>
-
-            </div>
-
-
-            <div class="persian-calendar-weekdays">
-    `;
-
-
-    JALALI_WEEKDAYS.forEach(
-        weekday => {
-
-            html += `
-                <span>
-                    ${weekday}
-                </span>
-            `;
-        }
-    );
-
-
-    html += `
-            </div>
-
-            <div class="persian-calendar-days">
-    `;
-
-
-    for (
-        let i = 0;
-        i < firstWeekDay;
-        i++
-    ) {
-
-        html += `
-            <span
-                class="calendar-empty"
-                aria-hidden="true"
-            ></span>
-        `;
-    }
-
-
-    for (
-        let day = 1;
-        day <= daysInMonth;
-        day++
-    ) {
-
-        const isToday =
-            year === todayJalali.year &&
-            month === todayJalali.month &&
-            day === todayJalali.day;
-
-
-        const isSelected =
-            selectedJalali &&
-            year === selectedJalali.year &&
-            month === selectedJalali.month &&
-            day === selectedJalali.day;
-
-
-        const classes = [
-            "calendar-day"
-        ];
-
-
-        if (isToday) {
-            classes.push(
-                "calendar-today-date"
-            );
-        }
-
-
-        if (isSelected) {
-            classes.push(
-                "calendar-selected"
-            );
-        }
-
-
-        html += `
-
-            <button
-                type="button"
-                class="${classes.join(" ")}"
-                data-calendar-day="${day}"
-                aria-label="${JALALI_MONTH_NAMES[month - 1]} ${day} ${year}"
-            >
-                ${toPersianDigits(day)}
-            </button>
-        `;
-    }
-
-
-    html += `
-
-            </div>
-
-            <button
-                type="button"
-                class="calendar-today"
-                data-calendar-today
-            >
-                امروز
-            </button>
-
-        </div>
-    `;
-
-
-    picker.innerHTML =
-        html;
-
-
-    /* ---------- previous month ---------- */
-
-    picker
-        .querySelector(
-            "[data-calendar-prev]"
-        )
-        ?.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                let newYear =
-                    year;
-
-                let newMonth =
-                    month - 1;
-
-
-                if (newMonth < 1) {
-
-                    newMonth = 12;
-
-                    newYear--;
-                }
-
-
-                datePickerState.year =
-                    newYear;
-
-                datePickerState.month =
-                    newMonth;
-
-
-                renderPersianCalendar(
-                    picker,
-                    newYear,
-                    newMonth
-                );
-            }
-        );
-
-
-    /* ---------- next month ---------- */
-
-    picker
-        .querySelector(
-            "[data-calendar-next]"
-        )
-        ?.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                let newYear =
-                    year;
-
-                let newMonth =
-                    month + 1;
-
-
-                if (newMonth > 12) {
-
-                    newMonth = 1;
-
-                    newYear++;
-                }
-
-
-                datePickerState.year =
-                    newYear;
-
-                datePickerState.month =
-                    newMonth;
-
-
-                renderPersianCalendar(
-                    picker,
-                    newYear,
-                    newMonth
-                );
-            }
-        );
-
-
-    /* ---------- days ---------- */
-
-    picker
-        .querySelectorAll(
-            "[data-calendar-day]"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                event => {
-
-                    event.stopPropagation();
-
-                    const day =
-                        Number(
-                            button.dataset
-                                .calendarDay
-                        );
-
-
-                    selectPersianDate(
-                        year,
-                        month,
-                        day
-                    );
-                }
-            );
-        });
-
-
-    /* ---------- today ---------- */
-
-    picker
-        .querySelector(
-            "[data-calendar-today]"
-        )
-        ?.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                selectPersianDate(
-                    todayJalali.year,
-                    todayJalali.month,
-                    todayJalali.day
-                );
-            }
-        );
-}
-
-
-/* =========================================================
-   SELECT DATE
-========================================================= */
-
-function selectPersianDate(
-    year,
-    month,
-    day
-) {
-
-    const gregorian =
-        jalaliToGregorian(
-            year,
-            month,
-            day
-        );
-
-
-    const databaseValue =
-        `${gregorian.year}-${pad2(gregorian.month)}-${pad2(gregorian.day)}`;
-
-
-    const displayValue =
-        toPersianDigits(
-            `${year}/${pad2(month)}/${pad2(day)}`
-        );
-
-
+    // سال شمسی
     if (
-        datePickerState.inputId &&
-        $(datePickerState.inputId)
+        year >= 1200 &&
+        year <= 1600
     ) {
 
-        $(
-            datePickerState.inputId
-        ).value =
-            displayValue;
-    }
-
-
-    if (
-        datePickerState.valueId &&
-        $(datePickerState.valueId)
-    ) {
-
-        $(
-            datePickerState.valueId
-        ).value =
-            databaseValue;
-    }
-
-
-    closeDatePickers();
-}
-
-
-/* =========================================================
-   SET DATE INPUT
-========================================================= */
-
-function setPersianDateInput(
-    inputId,
-    valueId,
-    databaseDate
-) {
-
-    const date =
-        parseDatabaseDate(
-            databaseDate
-        );
-
-
-    if (!date) {
-
-        clearPersianDateInput(
-            inputId,
-            valueId
-        );
-
-        return;
-    }
-
-
-    const jalali =
-        gregorianToJalali(
-            date.getFullYear(),
-            date.getMonth() + 1,
-            date.getDate()
-        );
-
-
-    if ($(inputId)) {
-
-        $(inputId).value =
-            toPersianDigits(
-                `${jalali.year}/${pad2(jalali.month)}/${pad2(jalali.day)}`
+        const gregorian =
+            jalaliToGregorian(
+                year,
+                month,
+                day
             );
+
+
+        return [
+
+            gregorian.year,
+
+            String(
+                gregorian.month
+            ).padStart(2, "0"),
+
+            String(
+                gregorian.day
+            ).padStart(2, "0")
+
+        ].join("-");
     }
 
 
-    if ($(valueId)) {
+    // اگر از قبل میلادی بوده
+    return [
 
-        $(valueId).value =
-            `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-    }
-}
+        String(year)
+            .padStart(4, "0"),
 
+        String(month)
+            .padStart(2, "0"),
 
-/* =========================================================
-   CLEAR DATE INPUT
-========================================================= */
+        String(day)
+            .padStart(2, "0")
 
-function clearPersianDateInput(
-    inputId,
-    valueId
-) {
-
-    if ($(inputId)) {
-        $(inputId).value = "";
-    }
-
-    if ($(valueId)) {
-        $(valueId).value = "";
-    }
-}
-
-
-/* =========================================================
-   REMINDER INPUT
-========================================================= */
-
-function getReminderValue() {
-
-    const date =
-        $("reminderDateValue")?.value ||
-        "";
-
-    const time =
-        $("reminderTime")?.value ||
-        "";
-
-
-    /*
-     * اگر هیچ‌کدام وارد نشده باشند:
-     * null
-     */
-
-    if (!date && !time) {
-        return null;
-    }
-
-
-    /*
-     * اگر یکی وارد شده ولی دیگری نه،
-     * یادآوری ناقص است.
-     */
-
-    if (!date || !time) {
-
-        alert(
-            "برای یادآوری باید هم تاریخ و هم ساعت را مشخص کنی."
-        );
-
-        return null;
-    }
-
-
-    return `${date}T${time}`;
-}
-
-
-/* =========================================================
-   FINAL DATE HELPERS
-========================================================= */
-
-function convertReminderForInput(
-    value
-) {
-
-    const parts =
-        parseReminderDateParts(
-            value
-        );
-
-
-    if (!parts) {
-
-        return {
-            date: "",
-            time: ""
-        };
-    }
-
-
-    return parts;
+    ].join("-");
 }

@@ -2,36 +2,78 @@
 <html lang="fa" dir="rtl">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> مدیریت کارها</title>
 
-    <link rel="stylesheet" href="/static/css/style.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>مدیریت کارها</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/css/style.css"
+    >
+
 </head>
 
+
 <body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
 
 <header class="topbar">
 
     <div class="brand">
-        <div class="brand-icon">✓</div>
+
+        <div class="brand-icon">
+            ✓
+        </div>
+
 
         <div class="brand-text">
-            <h1>SmarTask</h1>
-            <p>مدیریت هوشمند کارها</p>
+
+            <h1>
+                SmarTask
+            </h1>
+
+            <p>
+                مدیریت هوشمند کارها
+            </p>
+
         </div>
+
     </div>
+
 
     <div class="user-area">
 
         <div class="user-box">
-            <span class="user-icon">👤</span>
-            <span id="currentUsername">کاربر مهمان</span>
+
+            <span class="user-icon">
+                👤
+            </span>
+
+            <span id="currentUsername">
+                کاربر مهمان
+            </span>
+
         </div>
 
-        <button type="button" id="loginButton" class="header-button">
+
+        <button
+            type="button"
+            id="loginButton"
+            class="header-button"
+        >
             ورود
         </button>
+
 
         <button
             type="button"
@@ -46,9 +88,18 @@
 </header>
 
 
+
+<!-- =========================
+     MAIN
+========================= -->
+
 <main class="container">
 
-    <!-- خوش آمدگویی -->
+
+    <!-- =========================
+         WELCOME
+    ========================= -->
+
     <section class="welcome">
 
         <div class="welcome-content">
@@ -57,86 +108,169 @@
                 داشبورد شخصی
             </span>
 
+
             <h2 id="welcomeTitle">
                 سلام 👋
             </h2>
+
 
             <p id="welcomeText">
                 کارهای امروزت رو مدیریت کن و چیزی رو از قلم نینداز.
             </p>
 
+
             <div class="welcome-line">
+
                 <span></span>
+
                 امروز رو بهتر از دیروز بساز.
+
             </div>
 
         </div>
 
+
         <div class="welcome-image">
+
             <img
                 src="/static/images/dashboard.jpg"
                 alt="محیط کاری"
             >
+
             <div class="image-overlay"></div>
+
         </div>
 
     </section>
 
 
-    <!-- آمار -->
+
+    <!-- =========================
+         DASHBOARD
+    ========================= -->
+
     <section class="dashboard">
 
-        <div class="stat-card">
-            <div class="stat-icon olive">📋</div>
-
-            <div>
-                <span>کل کارها</span>
-                <strong id="totalTasks">0</strong>
-            </div>
-        </div>
 
         <div class="stat-card">
-            <div class="stat-icon brown">◷</div>
+
+            <div class="stat-icon olive">
+                📋
+            </div>
+
 
             <div>
-                <span>در حال انجام</span>
-                <strong id="inProgressTasks">0</strong>
+
+                <span>
+                    کل کارها
+                </span>
+
+                <strong id="totalTasks">
+                    0
+                </strong>
+
             </div>
+
         </div>
+
+
 
         <div class="stat-card">
-            <div class="stat-icon green">✓</div>
+
+            <div class="stat-icon brown">
+                ◷
+            </div>
+
 
             <div>
-                <span>انجام شده</span>
-                <strong id="completedTasks">0</strong>
+
+                <span>
+                    در حال انجام
+                </span>
+
+                <strong id="inProgressTasks">
+                    0
+                </strong>
+
             </div>
+
         </div>
+
+
 
         <div class="stat-card">
-            <div class="stat-icon cream">🔔</div>
+
+            <div class="stat-icon green">
+                ✓
+            </div>
+
 
             <div>
-                <span>یادآوری‌های نزدیک</span>
-                <strong id="reminderTasks">0</strong>
+
+                <span>
+                    انجام شده
+                </span>
+
+                <strong id="completedTasks">
+                    0
+                </strong>
+
             </div>
+
         </div>
+
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon cream">
+                🔔
+            </div>
+
+
+            <div>
+
+                <span>
+                    یادآوری‌های نزدیک
+                </span>
+
+                <strong id="reminderTasks">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
 
     </section>
 
 
-    <!-- یادآوری -->
-    <section class="reminder-section" id="reminderSection">
+
+    <!-- =========================
+         REMINDERS
+    ========================= -->
+
+    <section
+        class="reminder-section"
+        id="reminderSection"
+    >
 
         <div class="section-title">
 
             <div>
-                <span class="section-label">یادآوری</span>
+
+                <span class="section-label">
+                    یادآوری
+                </span>
+
 
                 <h2>
                     کارهایی که نباید فراموش کنی
                 </h2>
+
             </div>
+
 
             <span
                 id="reminderMessage"
@@ -145,42 +279,70 @@
 
         </div>
 
-        <div id="reminderList" class="reminder-list"></div>
+
+        <div
+            id="reminderList"
+            class="reminder-list"
+        ></div>
 
     </section>
 
 
-    <!-- کارها -->
+
+    <!-- =========================
+         TASK SECTION
+    ========================= -->
+
     <section class="task-section">
+
 
         <div class="section-header">
 
             <div>
+
                 <span class="section-label">
                     فهرست
                 </span>
 
-                <h2>کارهای من</h2>
+
+                <h2>
+                    کارهای من
+                </h2>
+
             </div>
+
 
             <button
                 type="button"
                 class="add-button"
                 id="openTaskModal"
             >
-                <span>+</span>
+
+                <span>
+                    +
+                </span>
+
                 افزودن کار جدید
+
             </button>
 
         </div>
 
 
-        <!-- فیلترها -->
+
+        <!-- =========================
+             FILTERS
+        ========================= -->
+
         <div class="filters">
+
 
             <div class="search-wrapper">
 
-                <span class="search-icon">⌕</span>
+                <span class="search-icon">
+                    ⌕
+                </span>
+
 
                 <input
                     type="text"
@@ -190,68 +352,149 @@
 
             </div>
 
+
+
             <select id="categoryFilter">
-                <option value="">همه دسته‌بندی‌ها</option>
+
+                <option value="">
+                    همه دسته‌بندی‌ها
+                </option>
+
             </select>
+
+
 
             <select id="priorityFilter">
-                <option value="">همه اولویت‌ها</option>
+
+                <option value="">
+                    همه اولویت‌ها
+                </option>
+
             </select>
+
+
 
             <select id="statusFilter">
-                <option value="">همه وضعیت‌ها</option>
-                <option value="انجام نشده">انجام نشده</option>
-                <option value="در حال انجام">در حال انجام</option>
-                <option value="انجام شده">انجام شده</option>
+
+                <option value="">
+                    همه وضعیت‌ها
+                </option>
+
+                <option value="انجام نشده">
+                    انجام نشده
+                </option>
+
+                <option value="در حال انجام">
+                    در حال انجام
+                </option>
+
+                <option value="انجام شده">
+                    انجام شده
+                </option>
+
             </select>
 
+
+
             <select id="dueDateFilter">
-                <option value="">همه تاریخ‌ها</option>
-                <option value="today">امروز</option>
-                <option value="upcoming">آینده</option>
-                <option value="none">بدون سررسید</option>
+
+                <option value="">
+                    همه تاریخ‌ها
+                </option>
+
+                <option value="today">
+                    امروز
+                </option>
+
+                <option value="upcoming">
+                    آینده
+                </option>
+
+                <option value="none">
+                    بدون سررسید
+                </option>
+
             </select>
+
 
         </div>
 
 
-        <div id="taskList" class="task-list">
+
+        <!-- =========================
+             TASK LIST
+        ========================= -->
+
+        <div
+            id="taskList"
+            class="task-list"
+        >
 
             <div class="empty-state">
-                <div class="empty-icon">📋</div>
+
+                <div class="empty-icon">
+                    📋
+                </div>
+
 
                 <h3>
                     هنوز کاری اضافه نکرده‌ای
                 </h3>
 
+
                 <p>
-                    اولین کارت را ایجاد کن تا مدیریت روزت را شروع کنیم.
+                    اولین کارت رو ایجاد کن تا مدیریت روزت رو شروع کنیم.
                 </p>
+
             </div>
 
         </div>
 
+
     </section>
+
 
 </main>
 
 
-<!-- مودال کار -->
-<div id="taskModal" class="modal">
+
+<!-- ==================================================
+     TASK MODAL
+================================================== -->
+
+<div
+    id="taskModal"
+    class="modal"
+>
+
 
     <div class="modal-content">
 
+
+        <!-- HEADER -->
+
         <div class="modal-header">
 
+
             <div>
-                <span class="section-label">کار جدید</span>
-                <h2>افزودن کار</h2>
+
+                <span class="section-label">
+                    کار جدید
+                </span>
+
+
+                <h2>
+                    افزودن کار
+                </h2>
+
             </div>
+
 
             <button
                 type="button"
                 id="closeTaskModal"
                 class="close-button"
+                aria-label="بستن"
             >
                 ×
             </button>
@@ -259,23 +502,42 @@
         </div>
 
 
+
+        <!-- FORM -->
+
         <form id="taskForm">
 
+
+            <!-- TITLE -->
+
             <div class="form-group">
-                <label for="title">عنوان کار</label>
+
+                <label for="title">
+                    عنوان کار
+                </label>
+
 
                 <input
                     type="text"
                     id="title"
                     name="title"
                     placeholder="مثلاً تحویل پروژه دانشگاه"
+                    autocomplete="off"
                     required
                 >
+
             </div>
 
 
+
+            <!-- DESCRIPTION -->
+
             <div class="form-group">
-                <label for="description">توضیحات</label>
+
+                <label for="description">
+                    توضیحات
+                </label>
+
 
                 <textarea
                     id="description"
@@ -283,29 +545,61 @@
                     rows="4"
                     placeholder="اگر توضیح بیشتری لازم است اینجا بنویس..."
                 ></textarea>
+
             </div>
 
 
-            <div class="form-group">
-                <label for="priority">اولویت</label>
 
-                <select id="priority" name="priority"></select>
+            <!-- PRIORITY -->
+
+            <div class="form-group">
+
+                <label for="priority">
+                    اولویت
+                </label>
+
+
+                <select
+                    id="priority"
+                    name="priority"
+                ></select>
+
             </div>
 
 
+
+            <!-- DUE DATE -->
+
             <div class="form-group">
-                <label for="dueDate">تاریخ سررسید</label>
+
+                <label for="dueDate">
+                    تاریخ سررسید
+                </label>
+
 
                 <input
                     type="date"
                     id="dueDate"
                     name="dueDate"
                 >
+
+
+                <small>
+                    تاریخ انتخاب‌شده در صورت شمسی بودن به میلادی تبدیل می‌شود.
+                </small>
+
             </div>
 
 
+
+            <!-- REMINDER -->
+
             <div class="form-group">
-                <label for="reminderAt">زمان یادآوری</label>
+
+                <label for="reminderAt">
+                    زمان یادآوری
+                </label>
+
 
                 <input
                     type="datetime-local"
@@ -313,13 +607,19 @@
                     name="reminderAt"
                 >
 
+
                 <small>
                     اگر نیازی به یادآوری نداری، این قسمت را خالی بگذار.
                 </small>
+
             </div>
 
 
+
+            <!-- AI CATEGORY -->
+
             <div class="ai-category-section">
+
 
                 <button
                     type="button"
@@ -329,15 +629,21 @@
                     🤖 تشخیص خودکار دسته‌بندی
                 </button>
 
+
                 <div
                     id="categoryResult"
                     class="category-result hidden"
                 ></div>
 
+
             </div>
 
 
+
+            <!-- ACTIONS -->
+
             <div class="form-actions">
+
 
                 <button
                     type="submit"
@@ -345,6 +651,7 @@
                 >
                     ثبت کار
                 </button>
+
 
                 <button
                     type="button"
@@ -354,7 +661,9 @@
                     انصراف
                 </button>
 
+
             </div>
+
 
         </form>
 
@@ -363,27 +672,44 @@
 </div>
 
 
-<!-- مودال ورود -->
-<div id="authModal" class="modal">
+
+<!-- ==================================================
+     AUTH MODAL
+================================================== -->
+
+<div
+    id="authModal"
+    class="modal"
+>
+
 
     <div class="modal-content auth-modal-content">
 
+
+        <!-- HEADER -->
+
         <div class="modal-header">
 
+
             <div>
+
                 <span class="section-label">
                     حساب کاربری
                 </span>
 
+
                 <h2 id="authTitle">
                     ورود به حساب
                 </h2>
+
             </div>
+
 
             <button
                 type="button"
                 id="closeAuthModal"
                 class="close-button"
+                aria-label="بستن"
             >
                 ×
             </button>
@@ -391,7 +717,11 @@
         </div>
 
 
+
+        <!-- AUTH TABS -->
+
         <div class="auth-tabs">
+
 
             <button
                 type="button"
@@ -401,6 +731,7 @@
                 ورود
             </button>
 
+
             <button
                 type="button"
                 id="registerTab"
@@ -409,16 +740,27 @@
                 ثبت‌نام
             </button>
 
+
         </div>
 
 
-        <!-- ورود -->
-        <form id="loginForm" class="auth-form">
+
+        <!-- ==================================================
+             LOGIN
+        ================================================== -->
+
+        <form
+            id="loginForm"
+            class="auth-form"
+        >
+
 
             <div class="form-group">
+
                 <label for="loginUsername">
                     نام کاربری
                 </label>
+
 
                 <input
                     type="text"
@@ -427,13 +769,17 @@
                     placeholder="نام کاربری"
                     required
                 >
+
             </div>
 
 
+
             <div class="form-group">
+
                 <label for="loginPassword">
                     رمز عبور
                 </label>
+
 
                 <input
                     type="password"
@@ -442,7 +788,9 @@
                     placeholder="رمز عبور"
                     required
                 >
+
             </div>
+
 
 
             <div
@@ -451,12 +799,14 @@
             ></div>
 
 
+
             <button
                 type="submit"
                 class="submit-button auth-submit"
             >
                 ورود
             </button>
+
 
 
             <button
@@ -467,19 +817,27 @@
                 ادامه به‌عنوان مهمان
             </button>
 
+
         </form>
 
 
-        <!-- ثبت نام -->
+
+        <!-- ==================================================
+             REGISTER
+        ================================================== -->
+
         <form
             id="registerForm"
             class="auth-form hidden"
         >
 
+
             <div class="form-group">
+
                 <label for="registerUsername">
                     نام کاربری
                 </label>
+
 
                 <input
                     type="text"
@@ -488,13 +846,17 @@
                     placeholder="حداقل ۳ کاراکتر"
                     required
                 >
+
             </div>
 
 
+
             <div class="form-group">
+
                 <label for="registerPassword">
                     رمز عبور
                 </label>
+
 
                 <input
                     type="password"
@@ -503,13 +865,17 @@
                     placeholder="حداقل ۴ کاراکتر"
                     required
                 >
+
             </div>
 
 
+
             <div class="form-group">
+
                 <label for="registerPasswordRepeat">
                     تکرار رمز عبور
                 </label>
+
 
                 <input
                     type="password"
@@ -518,13 +884,16 @@
                     placeholder="رمز عبور را دوباره وارد کن"
                     required
                 >
+
             </div>
+
 
 
             <div
                 id="registerMessage"
                 class="auth-message"
             ></div>
+
 
 
             <button
@@ -535,6 +904,7 @@
             </button>
 
 
+
             <button
                 type="button"
                 id="guestButtonRegister"
@@ -543,14 +913,40 @@
                 ادامه به‌عنوان مهمان
             </button>
 
+
         </form>
+
 
     </div>
 
 </div>
 
 
-<script src="/static/js/app.js"></script>
+
+<!-- ==================================================
+     NOTIFICATION CONTAINER
+     
+     نوتیفیکیشن‌های یادآوری توسط app.js
+     به صورت خودکار داخل این قسمت ساخته می‌شوند.
+================================================== -->
+
+<div
+    id="notificationContainer"
+    aria-live="polite"
+    aria-atomic="true"
+></div>
+
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script
+    src="/static/js/app.js"
+></script>
+
 
 </body>
+
 </html>
