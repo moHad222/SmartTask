@@ -2122,7 +2122,6 @@ function formatReminder(
     );
 }
 
-
 // =========================
 // BROWSER NOTIFICATIONS
 // =========================
@@ -2131,6 +2130,53 @@ const REMINDER_STORAGE_KEY =
     "smarttask3_shown_reminders";
 
 let reminderChecker = null;
+
+let notificationRegistration = null;
+
+
+// -------------------------
+// ثبت Service Worker
+// -------------------------
+
+async function registerNotificationServiceWorker() {
+
+    if (!("serviceWorker" in navigator)) {
+
+        console.warn(
+            "مرورگر از Service Worker پشتیبانی نمی‌کند."
+        );
+
+        return null;
+    }
+
+    try {
+
+        notificationRegistration =
+            await navigator.serviceWorker.register(
+                "/static/js/sw.js",
+                {
+                    scope: "/static/js/"
+                }
+            );
+
+        await navigator.serviceWorker.ready;
+
+        console.log(
+            "Notification Service Worker فعال شد."
+        );
+
+        return notificationRegistration;
+
+    } catch (error) {
+
+        console.error(
+            "Service Worker registration error:",
+            error
+        );
+
+        return null;
+    }
+}
 
 
 // -------------------------
@@ -2170,9 +2216,8 @@ function getShownReminderKeys() {
     }
 }
 
-function saveShownReminderKeys(
-    keys
-) {
+
+function saveShownReminderKeys(keys) {
 
     try {
 
@@ -2194,12 +2239,10 @@ function saveShownReminderKeys(
 
 
 // -------------------------
-// کلید یکتای هر یادآوری
+// کلید یکتای یادآوری
 // -------------------------
 
-function getReminderNotificationKey(
-    task
-) {
+function getReminderNotificationKey(task) {
 
     return [
         "smarttask3",
@@ -2216,9 +2259,7 @@ function getReminderNotificationKey(
 
 async function requestNotificationPermission() {
 
-    if (
-        !("Notification" in window)
-    ) {
+    if (!("Notification" in window)) {
 
         console.warn(
             "مرورگر این سیستم از Notification پشتیبانی نمی‌کند."
@@ -2286,7 +2327,20 @@ function startReminderChecker() {
     }
 
 
-    checkRemindersNow();
+    registerNotificationServiceWorker()
+        .then(() => {
+
+            checkRemindersNow();
+
+        })
+        .catch(error => {
+
+            console.error(
+                "Reminder Service Worker error:",
+                error
+            );
+
+        });
 
 
     reminderChecker =
@@ -2301,7 +2355,7 @@ function startReminderChecker() {
 // بررسی زمان یادآوری‌ها
 // -------------------------
 
-function checkRemindersNow() {
+async function checkRemindersNow() {
 
     if (
         !Array.isArray(allTasks)
@@ -2325,6 +2379,16 @@ function checkRemindersNow() {
     }
 
 
+    const registration =
+        notificationRegistration ||
+        await getNotificationRegistration();
+
+
+    if (!registration) {
+        return;
+    }
+
+
     const now =
         new Date();
 
@@ -2337,10 +2401,12 @@ function checkRemindersNow() {
         false;
 
 
-    allTasks.forEach(task => {
+    for (
+        const task of allTasks
+    ) {
 
         if (!task.reminder_at) {
-            return;
+            continue;
         }
 
 
@@ -2348,7 +2414,7 @@ function checkRemindersNow() {
             task.status ===
             "انجام شده"
         ) {
-            return;
+            continue;
         }
 
 
@@ -2359,7 +2425,7 @@ function checkRemindersNow() {
 
 
         if (!reminder) {
-            return;
+            continue;
         }
 
 
@@ -2372,16 +2438,9 @@ function checkRemindersNow() {
         if (
             shownKeys.has(key)
         ) {
-            return;
+            continue;
         }
 
-
-        // یادآوری زمانی ارسال می‌شود که زمان آن
-        // رسیده باشد یا کمی از آن گذشته باشد.
-        //
-        // دیگر محدودیت ۶۰ ثانیه وجود ندارد؛
-        // بنابراین اگر setInterval مرورگر کمی
-        // دیر اجرا شود، یادآوری از دست نمی‌رود.
 
         if (
             now.getTime() >=
@@ -2389,9 +2448,11 @@ function checkRemindersNow() {
         ) {
 
             const shown =
-                showTaskReminderNotification(
-                    task
+                await showTaskReminderNotification(
+                    task,
+                    registration
                 );
+
 
             if (shown) {
 
@@ -2400,8 +2461,7 @@ function checkRemindersNow() {
                 storageChanged = true;
             }
         }
-
-    });
+    }
 
 
     if (storageChanged) {
@@ -2414,12 +2474,53 @@ function checkRemindersNow() {
 
 
 // -------------------------
+// دریافت Service Worker
+// -------------------------
+
+async function getNotificationRegistration() {
+
+    if (
+        !("serviceWorker" in navigator)
+    ) {
+        return null;
+    }
+
+
+    try {
+
+        const registration =
+            await navigator.serviceWorker.ready;
+
+        notificationRegistration =
+            registration;
+
+        return registration;
+
+    } catch (error) {
+
+        console.error(
+            "Service Worker ready error:",
+            error
+        );
+
+        return null;
+    }
+}
+
+
+// -------------------------
 // نمایش Notification
 // -------------------------
 
-function showTaskReminderNotification(
-    task
+async function showTaskReminderNotification(
+    task,
+    registration
 ) {
+
+    if (!registration) {
+        return false;
+    }
+
 
     if (
         !("Notification" in window)
@@ -2445,49 +2546,36 @@ function showTaskReminderNotification(
         "یک کار برایت یادآوری شده است.";
 
 
+    const tag =
+        getReminderNotificationKey(
+            task
+        );
+
+
     try {
 
-        const notification =
-            new Notification(
-                title,
-                {
-                    body: body,
+        await registration.showNotification(
+            title,
+            {
+                body: body,
 
-                    icon:
-                        "/static/favicon.ico",
+                icon:
+                    "/static/favicon.ico",
 
-                    tag:
-                        getReminderNotificationKey(
-                            task
-                        ),
+                badge:
+                    "/static/favicon.ico",
 
-                    renotify: false
+                tag: tag,
+
+                renotify: false,
+
+                requireInteraction: false,
+
+                data: {
+                    taskId: task.id
                 }
-            );
-
-
-        notification.onclick =
-            function () {
-
-                window.focus();
-
-                notification.close();
-
-
-                const taskElement =
-                    document.querySelector(
-                        `[data-task-id="${task.id}"]`
-                    );
-
-
-                if (taskElement) {
-
-                    taskElement.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center"
-                    });
-                }
-            };
+            }
+        );
 
 
         return true;

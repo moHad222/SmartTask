@@ -59,9 +59,27 @@ def normalize_text(text):
 # LOAD DATA
 # =========================================================
 
-df = pd.read_csv(
-    DATA_PATH
-)
+if not DATA_PATH.exists():
+
+    raise FileNotFoundError(
+        f"فایل داده آموزشی پیدا نشد: {DATA_PATH}"
+    )
+
+
+df = pd.read_csv(DATA_PATH)
+
+required_columns = {
+    "text",
+    "category"
+}
+
+if not required_columns.issubset(df.columns):
+
+    raise ValueError(
+        "فایل training_data.csv باید ستون‌های "
+        "'text' و 'category' را داشته باشد."
+    )
+
 
 df["text"] = (
     df["text"]
@@ -74,6 +92,11 @@ df["category"] = (
     .astype(str)
     .str.strip()
 )
+
+df = df[
+    (df["text"] != "")
+    & (df["category"] != "")
+].copy()
 
 
 # =========================================================
