@@ -61,10 +61,10 @@ def send_json(
 ):
 
     response = json.dumps(
-    data,
-    ensure_ascii=False,
-    default=str
-).encode("utf-8")
+        data,
+        ensure_ascii=False,
+        default=str
+    ).encode("utf-8")
 
     handler.send_response(status)
 
@@ -362,10 +362,6 @@ class SmartTaskHandler(
             f"GET {path}"
         )
 
-        # -------------------------------------------------
-        # SESSION
-        # -------------------------------------------------
-
         try:
 
             session_id, session = (
@@ -388,10 +384,6 @@ class SmartTaskHandler(
             )
 
             return
-
-        # -------------------------------------------------
-        # SESSION API
-        # -------------------------------------------------
 
         if path == "/api/session":
 
@@ -420,10 +412,6 @@ class SmartTaskHandler(
             )
 
             return
-
-        # -------------------------------------------------
-        # TASKS
-        # -------------------------------------------------
 
         if path == "/api/tasks":
 
@@ -458,10 +446,6 @@ class SmartTaskHandler(
 
             return
 
-        # -------------------------------------------------
-        # CATEGORIES
-        # -------------------------------------------------
-
         if path == "/api/categories":
 
             try:
@@ -493,10 +477,6 @@ class SmartTaskHandler(
 
             return
 
-        # -------------------------------------------------
-        # OPTIONS
-        # -------------------------------------------------
-
         if path == "/api/options":
 
             send_json(
@@ -514,10 +494,6 @@ class SmartTaskHandler(
             )
 
             return
-
-        # -------------------------------------------------
-        # STATIC / HTML
-        # -------------------------------------------------
 
         super().do_GET()
 

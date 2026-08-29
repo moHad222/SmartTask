@@ -31,6 +31,31 @@ VECTORIZER_PATH = (
 
 
 # =========================================================
+# NORMALIZE
+# =========================================================
+
+def normalize_text(text):
+
+    text = str(text).lower().strip()
+
+    replacements = {
+        "ي": "ی",
+        "ى": "ی",
+        "ك": "ک",
+        "ۀ": "ه",
+        "ة": "ه",
+        "‌": " ",
+    }
+
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    text = " ".join(text.split())
+
+    return text
+
+
+# =========================================================
 # LOAD DATA
 # =========================================================
 
@@ -41,8 +66,7 @@ df = pd.read_csv(
 df["text"] = (
     df["text"]
     .astype(str)
-    .str.lower()
-    .str.strip()
+    .apply(normalize_text)
 )
 
 df["category"] = (
@@ -59,7 +83,8 @@ df["category"] = (
 vectorizer = TfidfVectorizer(
     analyzer="char_wb",
     ngram_range=(2, 5),
-    min_df=1
+    min_df=1,
+    sublinear_tf=True
 )
 
 
@@ -75,8 +100,9 @@ y = df["category"]
 # =========================================================
 
 model = LogisticRegression(
-    max_iter=2000,
-    random_state=42
+    max_iter=3000,
+    random_state=42,
+    class_weight="balanced"
 )
 
 model.fit(

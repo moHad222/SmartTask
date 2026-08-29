@@ -85,18 +85,9 @@ async function initializeApp() {
     // =========================
     // NOTIFICATIONS
     // =========================
-
-    try {
-
-        await requestNotificationPermission();
-
-    } catch (error) {
-
-        console.error(
-            "Notification setup error:",
-            error
-        );
-    }
+    // Permission در اینجا درخواست نمی‌شود.
+    // مرورگرها درخواست Notification را بهتر است
+    // در نتیجه تعامل مستقیم کاربر دریافت کنند.
 
     startReminderChecker();
 }
@@ -985,6 +976,7 @@ function resetTaskForm() {
 // =========================
 // LOAD TASKS
 // =========================
+
 async function loadTasks() {
 
     const response =
@@ -1028,6 +1020,7 @@ async function loadTasks() {
 
     checkRemindersNow();
 }
+
 
 // =========================
 // RENDER TASKS
@@ -1074,7 +1067,6 @@ function renderTasks(tasks) {
         card.className =
             "task-card";
 
-        // برای پیدا کردن کار مربوط به Notification
         card.dataset.taskId =
             task.id;
 
@@ -1312,6 +1304,33 @@ async function handleTaskSubmit(event) {
             oldTask?.category ||
             "تعیین نشده";
 
+    } else {
+
+        category =
+            category ||
+            "تعیین نشده";
+    }
+
+
+    // =========================
+    // NOTIFICATION PERMISSION
+    // =========================
+
+    const reminderValue =
+        $("reminderAt")
+            ?.value
+            ?.trim() || "";
+
+    if (reminderValue) {
+
+        await requestNotificationPermission();
+    }
+
+
+    if (
+        editingTaskId !== null
+    ) {
+
         await updateTask(
             editingTaskId,
             category
@@ -1321,8 +1340,7 @@ async function handleTaskSubmit(event) {
     }
 
     await createTask(
-        category ||
-        "تعیین نشده"
+        category
     );
 }
 
@@ -2268,11 +2286,9 @@ function startReminderChecker() {
     }
 
 
-    // بلافاصله یک بار بررسی
     checkRemindersNow();
 
 
-    // سپس هر ثانیه بررسی
     reminderChecker =
         setInterval(
             checkRemindersNow,
@@ -2323,13 +2339,11 @@ function checkRemindersNow() {
 
     allTasks.forEach(task => {
 
-        // بدون یادآوری
         if (!task.reminder_at) {
             return;
         }
 
 
-        // کار انجام‌شده دیگر یادآوری نمی‌شود
         if (
             task.status ===
             "انجام شده"
@@ -2355,7 +2369,6 @@ function checkRemindersNow() {
             );
 
 
-        // قبلاً اعلان داده شده
         if (
             shownKeys.has(key)
         ) {
@@ -2363,23 +2376,29 @@ function checkRemindersNow() {
         }
 
 
-        const difference =
-            now.getTime() -
-            reminder.getTime();
+        // یادآوری زمانی ارسال می‌شود که زمان آن
+        // رسیده باشد یا کمی از آن گذشته باشد.
+        //
+        // دیگر محدودیت ۶۰ ثانیه وجود ندارد؛
+        // بنابراین اگر setInterval مرورگر کمی
+        // دیر اجرا شود، یادآوری از دست نمی‌رود.
 
-
-        
         if (
-            difference >= 0 && difference <= 60000
+            now.getTime() >=
+            reminder.getTime()
         ) {
 
-            showTaskReminderNotification(
-                task
-            );
+            const shown =
+                showTaskReminderNotification(
+                    task
+                );
 
-            shownKeys.add(key);
+            if (shown) {
 
-            storageChanged = true;
+                shownKeys.add(key);
+
+                storageChanged = true;
+            }
         }
 
     });
@@ -2405,7 +2424,7 @@ function showTaskReminderNotification(
     if (
         !("Notification" in window)
     ) {
-        return;
+        return false;
     }
 
 
@@ -2413,7 +2432,7 @@ function showTaskReminderNotification(
         Notification.permission !==
         "granted"
     ) {
-        return;
+        return false;
     }
 
 
@@ -2434,19 +2453,14 @@ function showTaskReminderNotification(
                 {
                     body: body,
 
-                    // اگر favicon وجود داشته باشد استفاده می‌شود.
                     icon:
                         "/static/favicon.ico",
 
-                    // باعث می‌شود اعلان مربوط
-                    // به همان یادآوری شناخته شود.
                     tag:
                         getReminderNotificationKey(
                             task
                         ),
 
-                    // اعلان قبلی را دوباره به‌عنوان
-                    // اعلان جدید تکرار نمی‌کنیم.
                     renotify: false
                 }
             );
@@ -2476,11 +2490,15 @@ function showTaskReminderNotification(
             };
 
 
+        return true;
+
     } catch (error) {
 
         console.error(
             "Notification error:",
             error
         );
+
+        return false;
     }
 }
